@@ -12,13 +12,13 @@ interface TestProgressProps {
 }
 
 const TestProgress: React.FC<TestProgressProps> = ({
-    elapsedTime,
-    questionCount,
-    totalQuestions,
-    remainingQuestions,
-    onStop,
-    formatTime,
-}) => {
+                                                       elapsedTime,
+                                                       questionCount,
+                                                       totalQuestions,
+                                                       remainingQuestions,
+                                                       onStop,
+                                                       formatTime,
+                                                   }) => {
     const progressPercentage = totalQuestions > 0 ? (questionCount / totalQuestions) * 100 : 0;
 
     return (
@@ -33,13 +33,13 @@ const TestProgress: React.FC<TestProgressProps> = ({
                     <div className="w-full bg-gray-200 rounded-full h-3">
                         <div
                             className="bg-gradient-to-r from-[#228BE6] to-[#1E7BC8] h-3 rounded-full transition-all duration-300"
-                            style={{ width: `${progressPercentage}%` }}
+                            style={{width: `${progressPercentage}%`}}
                         />
                     </div>
                 </div>
 
                 {/* 통계 그리드 */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-3 md:grid-cols-3 gap-4">
                     <div className="text-center">
                         <div className="text-2xl font-bold text-[#228BE6]">
                             {formatTime(elapsedTime)}
@@ -61,14 +61,17 @@ const TestProgress: React.FC<TestProgressProps> = ({
                         <div className="text-xs text-gray-600">남은질문</div>
                     </div>
 
+
+                </div>
+                <div className="flex-shrink-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 p-6">
                     <div className="text-center">
                         <Button
                             variant="danger"
-                            size="sm"
+                            size="lg"
                             onClick={onStop}
-                            icon="⏹️"
+                            className="px-12 py-4 text-lg font-semibold w-full"
                         >
-                            종료
+                            테스트 종료
                         </Button>
                     </div>
                 </div>
