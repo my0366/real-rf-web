@@ -6,6 +6,7 @@ import TestResults from '../components/TestResults';
 import TestControl from '../components/TestControl.tsx';
 import TestProgress from '../components/TestProgress.tsx';
 import QuestionCard from '../components/QuestionCard.tsx';
+import UnknownQuestionsList from '../components/UnknownQuestionsList.tsx';
 
 const TestPage: React.FC = () => {
     // 테스트 관련 상태
@@ -20,6 +21,10 @@ const TestPage: React.FC = () => {
     const [availableQuestions, setAvailableQuestions] = useState<QuestionWithTopic[]>([]);
     const [usedQuestions, setUsedQuestions] = useState<QuestionWithTopic[]>([]);
     const [totalQuestionsInSet, setTotalQuestionsInSet] = useState(0);
+
+    // 모르는 문제 추적을 위한 상태 추가
+    const [unknownQuestions, setUnknownQuestions] = useState<QuestionWithTopic[]>([]);
+    const [showUnknownQuestions, setShowUnknownQuestions] = useState(false);
 
     // 다중 주제 선택을 위한 상태 수정
     const [selectedTopicIds, setSelectedTopicIds] = useState<string[]>([]);
@@ -120,8 +125,17 @@ const TestPage: React.FC = () => {
         getRandomQuestion();
     };
 
+    // 모르는 문제로 표시하고 다음 질문으로 넘어가는 함수
+    const markAsUnknownAndNext = () => {
+        if (currentQuestion) {
+            setUnknownQuestions(prev => [...prev, currentQuestion]);
+        }
+        nextQuestion();
+    };
+
     const restartTest = () => {
         setShowResults(false);
+        setUnknownQuestions([]); // 재시작 시 모르는 문제 목록 초기화
         startTest();
     };
 
@@ -135,6 +149,13 @@ const TestPage: React.FC = () => {
         setAvailableQuestions([]);
         setUsedQuestions([]);
         setTotalQuestionsInSet(0);
+        setUnknownQuestions([]); // 새 테스트 시 모르는 문제 목록 초기화
+        setShowUnknownQuestions(false);
+    };
+
+    // 모르는 문제 목록 보기/숨기기
+    const toggleUnknownQuestions = () => {
+        setShowUnknownQuestions(!showUnknownQuestions);
     };
 
     const handleScreenClick = () => {
@@ -174,10 +195,12 @@ const TestPage: React.FC = () => {
                             completedQuestions: questionCount,
                             totalTime: elapsedTime,
                             averageTime: questionCount > 0 ? elapsedTime / questionCount : 0,
-                            selectedTopics: selectedTopics.map(topic => topic.name).join(', ')
+                            selectedTopics: selectedTopics.map(topic => topic.name).join(', '),
+                            unknownQuestions: unknownQuestions
                         }}
                         onRestart={restartTest}
                         onNewTest={newTest}
+                        onShowUnknownQuestions={toggleUnknownQuestions}
                     />
                 </div>
             )}
@@ -215,12 +238,21 @@ const TestPage: React.FC = () => {
                                 onClick={handleScreenClick}
                                 currentQuestionNumber={questionCount + 1}
                                 totalQuestions={totalQuestionsInSet}
+                                onMarkAsUnknown={markAsUnknownAndNext}
                             />
                         ) : (
                             <div />
                         )}
                     </div>
                 </div>
+            )}
+
+            {/* 모르는 문제 목록 모달 */}
+            {showUnknownQuestions && (
+                <UnknownQuestionsList
+                    unknownQuestions={unknownQuestions}
+                    onClose={() => setShowUnknownQuestions(false)}
+                />
             )}
         </div>
     );

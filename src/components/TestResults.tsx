@@ -1,5 +1,6 @@
 import React from "react";
 import { Button, Card } from "./ui";
+import type { QuestionWithTopic } from "../types/question";
 
 interface TestResultsProps {
   results: {
@@ -7,16 +8,19 @@ interface TestResultsProps {
     completedQuestions: number;
     totalTime: number;
     averageTime: number;
-    selectedTopics?: string; // 단일 selectedTopic에서 복수형으로 변경
+    selectedTopics?: string;
+    unknownQuestions: QuestionWithTopic[]; // 모르는 문제 목록 추가
   };
   onRestart: () => void;
   onNewTest: () => void;
+  onShowUnknownQuestions: () => void; // 모르는 문제 보기 함수 추가
 }
 
 const TestResults: React.FC<TestResultsProps> = ({
   results,
   onRestart,
   onNewTest,
+  onShowUnknownQuestions,
 }) => {
   const formatTime = (ms: number) => {
     const minutes = Math.floor(ms / 60000);
@@ -71,13 +75,31 @@ const TestResults: React.FC<TestResultsProps> = ({
             <div className="text-sm text-purple-700">평균 시간</div>
           </div>
 
-          <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-            <div className="text-2xl font-bold text-orange-600">
-              {results.totalQuestions}
+          <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+            <div className="text-2xl font-bold text-red-600">
+              {results.unknownQuestions.length}
             </div>
-            <div className="text-sm text-orange-700">전체 질문</div>
+            <div className="text-sm text-red-700">모르는 문제</div>
           </div>
         </div>
+
+        {/* 모르는 문제가 있을 때만 해결하지 못한 문제 버튼 표시 */}
+        {results.unknownQuestions.length > 0 && (
+          <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+            <div className="text-red-800 font-medium mb-2">
+              ❓ {results.unknownQuestions.length}개의 모르는 문제가 있습니다
+            </div>
+            <Button
+              variant="secondary"
+              onClick={onShowUnknownQuestions}
+              icon="📋"
+              size="md"
+              className="bg-red-100 hover:bg-red-200 text-red-800 border-red-300"
+            >
+              해결하지 못한 문제 보기
+            </Button>
+          </div>
+        )}
 
         {/* 액션 버튼 */}
         <div className="flex flex-col sm:flex-row gap-3">
