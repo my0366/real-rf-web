@@ -91,17 +91,26 @@ export const useDeleteTopic = () => {
 };
 
 // Test Questions 관련 훅들
-export const useTestQuestions = (topicId?: string) => {
+export const useTestQuestions = (topicIds?: string) => {
   return useQuery({
-    queryKey: QUERY_KEYS.testQuestions(topicId),
+    queryKey: QUERY_KEYS.testQuestions(topicIds),
     queryFn: async (): Promise<QuestionWithTopic[]> => {
       let query = supabase.from('questions').select(`
         *,
         topic:topics(id, name)
       `);
 
-      if (topicId) {
-        query = query.eq('topic_id', topicId);
+      if (topicIds) {
+        // 쉼표로 구분된 문자열을 배열로 변환
+        const topicIdArray = topicIds.split(',').filter(id => id.trim());
+
+        if (topicIdArray.length === 1) {
+          // 단일 주제인 경우
+          query = query.eq('topic_id', topicIdArray[0]);
+        } else if (topicIdArray.length > 1) {
+          // 다중 주제인 경우 - in 연산자 사용
+          query = query.in('topic_id', topicIdArray);
+        }
       }
 
       const { data, error } = await query;
@@ -114,17 +123,26 @@ export const useTestQuestions = (topicId?: string) => {
 };
 
 // Questions CRUD 관련 훅들
-export const useQuestions = (filterTopicId?: string) => {
+export const useQuestions = (filterTopicIds?: string) => {
   return useQuery({
-    queryKey: ['questions', filterTopicId],
+    queryKey: ['questions', filterTopicIds],
     queryFn: async () => {
       let query = supabase.from('questions').select(`
         *,
         topic:topics(id, name)
       `).order('created_at', { ascending: false });
 
-      if (filterTopicId) {
-        query = query.eq('topic_id', filterTopicId);
+      if (filterTopicIds) {
+        // 쉼표로 구분된 문자열을 배열로 변환
+        const topicIdArray = filterTopicIds.split(',').filter(id => id.trim());
+
+        if (topicIdArray.length === 1) {
+          // 단일 주제인 경우
+          query = query.eq('topic_id', topicIdArray[0]);
+        } else if (topicIdArray.length > 1) {
+          // 다중 주제인 경우 - in 연산자 사용
+          query = query.in('topic_id', topicIdArray);
+        }
       }
 
       const { data, error } = await query;
@@ -134,17 +152,26 @@ export const useQuestions = (filterTopicId?: string) => {
   });
 };
 
-export const useSearchQuestions = (searchTerm: string, filterTopicId?: string) => {
+export const useSearchQuestions = (searchTerm: string, filterTopicIds?: string) => {
   return useQuery({
-    queryKey: ['questions', 'search', searchTerm, filterTopicId],
+    queryKey: ['questions', 'search', searchTerm, filterTopicIds],
     queryFn: async () => {
       let query = supabase.from('questions').select(`
         *,
         topic:topics(id, name)
       `).order('created_at', { ascending: false });
 
-      if (filterTopicId) {
-        query = query.eq('topic_id', filterTopicId);
+      if (filterTopicIds) {
+        // 쉼표로 구분된 문자열을 배열로 변환
+        const topicIdArray = filterTopicIds.split(',').filter(id => id.trim());
+
+        if (topicIdArray.length === 1) {
+          // 단일 주제인 경우
+          query = query.eq('topic_id', topicIdArray[0]);
+        } else if (topicIdArray.length > 1) {
+          // 다중 주제인 경우 - in 연산자 사용
+          query = query.in('topic_id', topicIdArray);
+        }
       }
 
       // 검색어가 있으면 content 또는 english 필드에서 검색

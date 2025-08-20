@@ -7,7 +7,7 @@ interface TestResultsProps {
     completedQuestions: number;
     totalTime: number;
     averageTime: number;
-    selectedTopic?: string;
+    selectedTopics?: string; // 단일 selectedTopic에서 복수형으로 변경
   };
   onRestart: () => void;
   onNewTest: () => void;
@@ -41,8 +41,8 @@ const TestResults: React.FC<TestResultsProps> = ({
           <div className="text-6xl">🎉</div>
           <h2 className="text-2xl font-bold text-gray-800">테스트 완료!</h2>
           <p className="text-gray-600">
-            {results.selectedTopic
-              ? `${results.selectedTopic} 주제`
+            {results.selectedTopics
+              ? `${results.selectedTopics} 주제`
               : "모든 주제"}{" "}
             테스트를 마쳤습니다
           </p>

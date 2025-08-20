@@ -6,7 +6,6 @@ import TestResults from '../components/TestResults';
 import TestControl from '../components/TestControl.tsx';
 import TestProgress from '../components/TestProgress.tsx';
 import QuestionCard from '../components/QuestionCard.tsx';
-import WaitingCard from '../components/WaitingCard.tsx';
 
 const TestPage: React.FC = () => {
     // 테스트 관련 상태
@@ -22,20 +21,23 @@ const TestPage: React.FC = () => {
     const [usedQuestions, setUsedQuestions] = useState<QuestionWithTopic[]>([]);
     const [totalQuestionsInSet, setTotalQuestionsInSet] = useState(0);
 
-    // 설정 관련 상태
-    const [selectedTopicId, setSelectedTopicId] = useState('');
+    // 다중 주제 선택을 위한 상태 수정
+    const [selectedTopicIds, setSelectedTopicIds] = useState<string[]>([]);
+    const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
 
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
     // React Query 훅들
     const { data: topics = [], isLoading: topicsLoading } = useTopics();
-    const { refetch: fetchTestQuestions, isFetching: testQuestionsLoading } = useTestQuestions(selectedTopicId);
+    const { refetch: fetchTestQuestions, isFetching: testQuestionsLoading } = useTestQuestions(
+        isMultiSelectMode ? selectedTopicIds.join(',') : selectedTopicIds[0] || ''
+    );
 
     useEffect(() => {
-        if (topics.length > 0 && !selectedTopicId) {
-            setSelectedTopicId(topics[0].id);
+        if (topics.length > 0 && selectedTopicIds.length === 0) {
+            setSelectedTopicIds([topics[0].id]);
         }
-    }, [topics, selectedTopicId]);
+    }, [topics, selectedTopicIds]);
 
     useEffect(() => {
         if (isRunning) {
@@ -149,7 +151,7 @@ const TestPage: React.FC = () => {
         return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`;
     };
 
-    const selectedTopic = topics.find(t => t.id === selectedTopicId);
+    const selectedTopics = topics.filter(t => selectedTopicIds.includes(t.id));
 
     if (topicsLoading) {
         return (
@@ -172,7 +174,7 @@ const TestPage: React.FC = () => {
                             completedQuestions: questionCount,
                             totalTime: elapsedTime,
                             averageTime: questionCount > 0 ? elapsedTime / questionCount : 0,
-                            selectedTopic: selectedTopic?.name
+                            selectedTopics: selectedTopics.map(topic => topic.name).join(', ')
                         }}
                         onRestart={restartTest}
                         onNewTest={newTest}
@@ -185,8 +187,10 @@ const TestPage: React.FC = () => {
                     {!isTestMode && (
                         <TestControl
                             topics={topics}
-                            selectedTopicId={selectedTopicId}
-                            setSelectedTopicId={setSelectedTopicId}
+                            selectedTopicIds={selectedTopicIds}
+                            setSelectedTopicIds={setSelectedTopicIds}
+                            isMultiSelectMode={isMultiSelectMode}
+                            setIsMultiSelectMode={setIsMultiSelectMode}
                             onStart={startTest}
                             isLoading={testQuestionsLoading}
                         />
@@ -213,7 +217,7 @@ const TestPage: React.FC = () => {
                                 totalQuestions={totalQuestionsInSet}
                             />
                         ) : (
-                            <WaitingCard/>
+                            <div />
                         )}
                     </div>
                 </div>
