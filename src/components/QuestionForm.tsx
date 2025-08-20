@@ -293,8 +293,8 @@ const QuestionForm: React.FC = () => {
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Select
-                  label="주제별 필터"
-                  icon="🔍"
+                  label="주제 선택"
+                  // icon="🔍"
                   value={filterTopicId}
                   onChange={(e) => setFilterTopicId(e.target.value)}
                 >
@@ -307,8 +307,8 @@ const QuestionForm: React.FC = () => {
                 </Select>
 
                 <Input
-                  label="질문 검색"
-                  icon="🔎"
+                  // label="질문 검색"
+                  // icon="🔎"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="질문 내용이나 영어로 검색하세요"
@@ -437,7 +437,7 @@ const QuestionForm: React.FC = () => {
                             variant="primary"
                             size="sm"
                             onClick={() => startEdit(question)}
-                            icon="✏️"
+                            // icon="✏️"
                           >
                             수정
                           </Button>
@@ -446,7 +446,7 @@ const QuestionForm: React.FC = () => {
                             size="sm"
                             onClick={() => handleDeleteQuestion(question.id)}
                             loading={deleteQuestion.isPending}
-                            icon="🗑️"
+                            // icon="🗑"
                           >
                             삭제
                           </Button>

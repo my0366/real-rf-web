@@ -285,10 +285,10 @@ const TopicManager: React.FC = () => {
                   </div>
                   <div className="flex gap-2">
                     <Button
-                      variant="warning"
+                      variant="primary"
                       size="sm"
                       onClick={() => startEdit(topic)}
-                      icon="✏️"
+                      // icon="✏️"
                     >
                       수정
                     </Button>
@@ -297,7 +297,7 @@ const TopicManager: React.FC = () => {
                       size="sm"
                       onClick={() => handleDeleteTopic(topic.id)}
                       loading={deleteTopic.isPending}
-                      icon="🗑️"
+                      // icon="🗑️"
                     >
                       삭제
                     </Button>
