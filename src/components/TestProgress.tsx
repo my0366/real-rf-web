@@ -63,7 +63,7 @@ const TestProgress: React.FC<TestProgressProps> = ({
 
 
                 </div>
-                <div className="flex-shrink-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 p-6">
+                <div className="flex-shrink-0  p-6">
                     <div className="text-center">
                         <Button
                             variant="danger"
@@ -81,4 +81,5 @@ const TestProgress: React.FC<TestProgressProps> = ({
 };
 
 export default TestProgress;
+
 
