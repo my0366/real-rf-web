@@ -325,7 +325,6 @@ const TestControl: React.FC<TestControlProps> = ({
                 </span>
                             ) : (
                                 <span className="flex items-center gap-2">
-                  <span className="text-xl">🚀</span>
                   테스트 시작하기
                   <span className="bg-white/20 px-2 py-1 rounded-full text-sm">
                     {selectedTopics.length}개 주제
