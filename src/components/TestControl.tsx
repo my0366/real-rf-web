@@ -171,8 +171,8 @@ const TestControl: React.FC<TestControlProps> = ({
                                                 : 'border-gray-200 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:shadow-sm'
                                         }`}>
                                             {/* 체크박스와 제목 */}
-                                            <div className="flex items-start space-x-3 mb-2">
-                                                <div className="relative flex-shrink-0 mt-1">
+                                            <div className="flex items-center space-x-3 mb-2">
+                                                <div className="relative flex-shrink-0">
                                                     <input
                                                         type="radio"
                                                         name="topic"
@@ -197,7 +197,7 @@ const TestControl: React.FC<TestControlProps> = ({
                                                 </div>
 
                                                 <div className="flex-1">
-                                                    <div className="flex items-center gap-2 mb-1">
+                                                    <div className="flex items-center gap-2">
                                                         <span className="text-xl">📚</span>
                                                         <div className="font-medium text-base">{topic.name}</div>
                                                     </div>
