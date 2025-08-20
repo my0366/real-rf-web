@@ -102,7 +102,7 @@ const QuestionForm: React.FC = () => {
       .map((line) => line.trim())
       .filter((line) => line.length > 0)
       .map((line) => {
-        let cleanLine = line.replace(/^\d+\.\s*/, "");
+        const cleanLine = line.replace(/^\d+\.\s*/, "");
         let koreanContent = cleanLine;
         let englishTranslation = null;
 
@@ -171,6 +171,17 @@ const QuestionForm: React.FC = () => {
     setEditingQuestion(null);
     setEditContent("");
     setEditEnglish("");
+  };
+
+  // 수정 모드에서 키보드 이벤트 처리
+  const handleEditKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleUpdateQuestion();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      cancelEdit();
+    }
   };
 
   // 현재 표시할 질문 목록 결정
@@ -373,6 +384,7 @@ const QuestionForm: React.FC = () => {
                             icon="💬"
                             value={editContent}
                             onChange={(e) => setEditContent(e.target.value)}
+                            onKeyDown={handleEditKeyDown}
                             rows={2}
                           />
                           <Input
@@ -380,6 +392,7 @@ const QuestionForm: React.FC = () => {
                             icon="🌍"
                             value={editEnglish}
                             onChange={(e) => setEditEnglish(e.target.value)}
+                            onKeyDown={handleEditKeyDown}
                           />
                         </div>
                         <div className="flex flex-col gap-2 ml-4">
