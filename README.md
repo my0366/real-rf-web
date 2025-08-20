@@ -1,96 +1,165 @@
 # 🎯 랜덤 질문 앱
 
-React + Supabase를 사용한 간단한 랜덤 질문 생성기입니다.
+주제별 질문을 관리하고 테스트할 수 있는 웹 애플리케이션입니다.
 
-## 주요 기능
+## ✨ 주요 기능
 
-- 📝 **질문 등록**: 주제와 함께 질문을 저장
-- 🎲 **랜덤 질문**: 저장된 질문 중 무작위 선택
-- 🔍 **주제별 필터**: 특정 주제의 질문만 랜덤 선택
-- 💾 **실시간 데이터베이스**: Supabase를 통한 실시간 데이터 관리
+### 📚 주제 관리
 
-## 기술 스택
+- 주제 생성, 수정, 삭제 (CRUD)
+- 일괄 주제 등록 (텍스트 붙여넣기 지원)
+- 기본 주제 17개 미리 등록
 
-- **Frontend**: React 19 + TypeScript + Vite
-- **Backend**: Supabase (PostgreSQL)
-- **Styling**: Tailwind CSS (utility classes)
+### 📝 질문 등록
 
-## 설치 및 실행 방법
+- 개별 질문 등록
+- 일괄 질문 등록 (한 줄에 하나씩)
+- 주제별 분류
+- 영어 번역 지원 (선택사항)
 
-### 1. 프로젝트 클론
+### 🎯 테스트 기능
+
+- 스톱워치가 포함된 테스트 모드
+- 화면 클릭으로 다음 질문 진행
+- 주제별 필터링 지원
+- 테스트 통계 (완료한 질문 수, 소요 시간)
+
+### 📱 반응형 UI
+
+- 모바일과 데스크탑 최적화
+- 탭 기반 네비게이션
+- Tailwind CSS로 구현된 모던한 디자인
+
+## 🚀 시작하기
+
+### 1. 의존성 설치
+
 ```bash
-git clone <repository-url>
-cd real-rf-web
 npm install
 ```
 
-### 2. Supabase 설정
-1. [Supabase](https://supabase.com)에서 새 프로젝트 생성
-2. SQL Editor에서 `supabase-setup.sql` 파일의 내용 실행
-3. Settings > API에서 프로젝트 URL과 anon key 확인
+### 2. 환경 변수 설정
 
-### 3. 환경 변수 설정
-`.env.example`을 복사하여 `.env` 파일 생성:
-```bash
-cp .env.example .env
+`.env` 파일을 생성하고 Supabase 설정을 추가하세요:
+
+```env
+VITE_SUPABASE_URL=your_supabase_url_here
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 ```
 
-`.env` 파일에 Supabase 정보 입력:
-```
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
+### 3. Supabase 데이터베이스 설정
+
+`supabase-setup.sql` 파일의 내용을 Supabase SQL 편집기에서 실행하세요.
 
 ### 4. 개발 서버 실행
+
 ```bash
 npm run dev
 ```
 
-### 5. 빌드
-```bash
-npm run build
-```
+## 🗄️ 데이터베이스 구조
 
-## 프로젝트 구조
+### topics 테이블
+
+- `id`: UUID (Primary Key)
+- `name`: TEXT (주제 이름, Unique)
+- `created_at`: TIMESTAMP
+
+### questions 테이블
+
+- `id`: UUID (Primary Key)
+- `topic_id`: UUID (topics 테이블 참조)
+- `content`: TEXT (질문 내용)
+- `english`: TEXT (영어 번역, 선택사항)
+- `created_at`: TIMESTAMP
+
+## 📱 사용법
+
+### 주제 관리
+
+1. **새 주제 추가**: 주제 이름을 입력하고 추가 버튼 클릭
+2. **일괄 등록**: 텍스트를 붙여넣기하여 여러 주제를 한 번에 등록
+3. **주제 수정/삭제**: 각 주제 옆의 버튼으로 관리
+
+### 질문 등록
+
+1. **개별 등록**: 주제 선택 후 질문 내용과 영어 번역 입력
+2. **일괄 등록**: 주제 선택 후 여러 질문을 한 줄에 하나씩 입력
+
+### 테스트
+
+1. **테스트 시작**: 원하는 주제 선택 후 테스트 시작 버튼 클릭
+2. **질문 진행**: 화면을 클릭하여 다음 질문으로 진행
+3. **테스트 종료**: 테스트 종료 버튼으로 스톱워치 정지
+
+## 🛠️ 기술 스택
+
+- **Frontend**: React 19 + TypeScript
+- **Styling**: Tailwind CSS
+- **Database**: Supabase (PostgreSQL)
+- **Build Tool**: Vite
+- **Package Manager**: npm
+
+## 📁 프로젝트 구조
 
 ```
 src/
 ├── components/
+│   ├── TopicManager.tsx    # 주제 관리 컴포넌트
 │   ├── QuestionForm.tsx    # 질문 등록 폼
-│   └── RandomQuestion.tsx  # 랜덤 질문 표시
+│   └── RandomQuestion.tsx  # 랜덤 질문 및 테스트
 ├── types/
-│   └── question.ts         # Question 타입 정의
-├── supabaseClient.ts       # Supabase 클라이언트 설정
+│   └── question.ts         # 타입 정의
+├── supabaseClient.ts       # Supabase 클라이언트
 └── App.tsx                 # 메인 앱 컴포넌트
 ```
 
-## 배포
+## 🔧 개발 명령어
 
-### Vercel 배포
-1. GitHub에 프로젝트 푸시
-2. Vercel에서 프로젝트 import
-3. 환경 변수를 Vercel 설정에 추가
-4. 자동 배포 완료
+```bash
+# 개발 서버 실행
+npm run dev
 
-### Netlify 배포
-1. GitHub에 프로젝트 푸시
-2. Netlify에서 프로젝트 import
-3. Build command: `npm run build`
-4. Publish directory: `dist`
-5. 환경 변수 설정 후 배포
+# 빌드
+npm run build
 
-## 데이터베이스 스키마
+# 린트 검사
+npm run lint
 
-```sql
-questions (
-  id: UUID (Primary Key)
-  topic: TEXT (질문 주제)
-  text: TEXT (질문 내용)
-  created_at: TIMESTAMP (생성일시)
-)
+# 미리보기
+npm run preview
 ```
 
-## 라이센스
+## 📝 기본 주제 목록
 
-MIT License
+앱 설치 시 자동으로 등록되는 기본 주제들:
 
+1. 고마워
+2. 천만에요
+3. 많은도움이됐어
+4. ~해줘서 고마워
+5. ~해줘서 고마워2
+6. 실례합니다
+7. 방해해서 미안하지만
+8. ~해서 미안해
+9. 괜찮아
+10. 너 오늘 기분 좋아보이네
+11. 날아갈 듯 기분 좋아
+12. 이보다 더 좋을수는 없어
+13. 감동했어
+14. 축하해
+15. 잘했어
+16. 멋져
+17. 훌룡해
+
+## 🤝 기여하기
+
+1. 이 저장소를 포크하세요
+2. 새로운 기능 브랜치를 생성하세요 (`git checkout -b feature/amazing-feature`)
+3. 변경사항을 커밋하세요 (`git commit -m 'Add some amazing feature'`)
+4. 브랜치에 푸시하세요 (`git push origin feature/amazing-feature`)
+5. Pull Request를 생성하세요
+
+## 📄 라이선스
+
+이 프로젝트는 MIT 라이선스 하에 배포됩니다.
