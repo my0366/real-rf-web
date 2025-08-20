@@ -28,7 +28,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 
     return (
         <Card
-            className={`w-full max-w-3xl min-h-[400px] flex flex-col items-center justify-center border-2 transition-all ${
+            className={`w-full max-w-3xl min-h-[200px] flex flex-col items-center justify-center border-2 transition-all ${
                 isTestMode
                     ? "cursor-pointer hover:shadow-xl border-[#228BE6]/30 hover:border-[#228BE6]/50 border-dashed active:scale-98"
                     : "border-gray-300"
@@ -71,11 +71,11 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                 </div>
 
                 {/* 영어 */}
-                {question.english && (
-                    <div className="text-lg sm:text-xl md:text-2xl text-gray-600 italic leading-relaxed">
-                        {question.english}
-                    </div>
-                )}
+                {/*{question.english && (*/}
+                {/*    <div className="text-lg sm:text-xl md:text-2xl text-gray-600 italic leading-relaxed">*/}
+                {/*        {question.english}*/}
+                {/*    </div>*/}
+                {/*)}*/}
 
                 {/* 터치 안내 */}
                 {isTestMode && (
