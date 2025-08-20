@@ -112,7 +112,7 @@ const TestControl: React.FC<TestControlProps> = ({
                             ) : (
                                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                                     <p className="text-blue-800 text-sm">
-                                        <span className="font-medium">🎯 단일 모드:</span>
+                                        <span className="font-medium">🎯 단일 선택:</span>
                                         특정 주제에 집중해서 연습할 수 있어요
                                     </p>
                                 </div>
