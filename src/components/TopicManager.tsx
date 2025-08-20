@@ -174,7 +174,7 @@ const TopicManager: React.FC = () => {
       {!showBulkAdd && (
         <Card variant="primary" padding="lg">
           <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            ➕ 새 주제 추가
+            ➕ 주제 추가
           </h3>
           <div className="flex flex-col sm:flex-row gap-3">
             <Input
