@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {supabase} from '../supabaseClient';
 import type {QuestionWithTopic} from '../types/question';
+import { useTopics, useTestQuestions } from '../hooks/useQuestions';
 
 import TestResults from '../components/TestResults';
 import TestControl from '../components/TestControl.tsx';
@@ -24,14 +24,18 @@ const TestPage: React.FC = () => {
 
     // 설정 관련 상태
     const [selectedTopicId, setSelectedTopicId] = useState('');
-    const [topics, setTopics] = useState<{ id: string; name: string }[]>([]);
 
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+    // React Query 훅들
+    const { data: topics = [], isLoading: topicsLoading } = useTopics();
+    const { refetch: fetchTestQuestions, isFetching: testQuestionsLoading } = useTestQuestions(selectedTopicId);
+
     useEffect(() => {
-        fetchTopics();
-        // fetchTotalQuestions();
-    }, []);
+        if (topics.length > 0 && !selectedTopicId) {
+            setSelectedTopicId(topics[0].id);
+        }
+    }, [topics, selectedTopicId]);
 
     useEffect(() => {
         if (isRunning) {
@@ -51,67 +55,11 @@ const TestPage: React.FC = () => {
         };
     }, [isRunning]);
 
-    const fetchTopics = async () => {
-        try {
-            const {data, error} = await supabase
-                .from('topics')
-                .select('id, name')
-                .order('name');
+    const getRandomQuestion = (questionsPool?: QuestionWithTopic[]) => {
+        // questionsPool이 제공되면 사용하고, 아니면 현재 availableQuestions 사용
+        const questions = questionsPool || availableQuestions;
 
-            if (error)
-              throw error;
-            setTopics(data || []);
-            if (data && data.length > 0) {
-                setSelectedTopicId(data[0].id);
-            }
-        } catch (error) {
-            console.error('주제를 불러오는 중 오류:', error);
-        }
-    };
-
-    // const fetchTotalQuestions = async () => {
-    //     try {
-    //         const {count, error} = await supabase
-    //             .from('questions')
-    //             .select('*', {count: 'exact', head: true});
-    //
-    //         if (error) throw error;
-    //     } catch (error) {
-    //         console.error('총 질문 수를 불러오는 중 오류:', error);
-    //     }
-    // };
-
-    const fetchTestQuestions = async () => {
-        try {
-            let query = supabase.from('questions').select(`
-                    *,
-                    topic:topics(id, name)
-                `);
-
-            if (selectedTopicId) {
-                query = query.eq('topic_id', selectedTopicId);
-            }
-
-            const {data, error} = await query;
-
-            if (error) throw error;
-
-            if (data && data.length > 0) {
-                const questions = data as QuestionWithTopic[];
-                setAvailableQuestions([...questions]);
-                setUsedQuestions([]);
-                setTotalQuestionsInSet(questions.length);
-                return questions;
-            }
-            return [];
-        } catch (error) {
-            console.error('테스트 질문을 불러오는 중 오류:', error);
-            return [];
-        }
-    };
-
-    const getRandomQuestion = () => {
-        if (availableQuestions.length === 0) {
+        if (questions.length === 0) {
             // 모든 질문을 다 사용했을 때
             setCurrentQuestion(null);
             setIsRunning(false);
@@ -120,11 +68,11 @@ const TestPage: React.FC = () => {
             return;
         }
 
-        const randomIndex = Math.floor(Math.random() * availableQuestions.length);
-        const selectedQuestion = availableQuestions[randomIndex];
+        const randomIndex = Math.floor(Math.random() * questions.length);
+        const selectedQuestion = questions[randomIndex];
 
         // 선택된 질문을 사용된 질문으로 이동
-        const newAvailable = availableQuestions.filter((_, index) => index !== randomIndex);
+        const newAvailable = questions.filter((_, index) => index !== randomIndex);
         const newUsed = [...usedQuestions, selectedQuestion];
 
         setAvailableQuestions(newAvailable);
@@ -133,22 +81,30 @@ const TestPage: React.FC = () => {
     };
 
     const startTest = async () => {
-        const questions = await fetchTestQuestions();
-        if (questions.length === 0) {
-            alert('테스트할 질문이 없습니다. 질문을 먼저 등록해주세요.');
-            return;
+        try {
+            const { data: questions } = await fetchTestQuestions();
+
+            if (!questions || questions.length === 0) {
+                alert('테스트할 질문이 없습니다. 질문을 먼저 등록해주세요.');
+                return;
+            }
+
+            setAvailableQuestions([...questions]);
+            setUsedQuestions([]);
+            setTotalQuestionsInSet(questions.length);
+
+            setIsTestMode(true);
+            setQuestionCount(0);
+            setElapsedTime(0);
+            setIsRunning(true);
+            setShowResults(false);
+
+            // 첫 번째 질문 가져오기 - questions 배열을 직접 전달
+            getRandomQuestion(questions);
+        } catch (error) {
+            console.error('테스트 질문을 불러오는 중 오류:', error);
+            alert('테스트를 시작할 수 없습니다. 다시 시도해주세요.');
         }
-
-        setIsTestMode(true);
-        setQuestionCount(0);
-        setElapsedTime(0);
-        setIsRunning(true);
-        setShowResults(false);
-
-        // 첫 번째 질문 가져오기
-        setTimeout(() => {
-            getRandomQuestion();
-        }, 100);
     };
 
     const stopTest = () => {
@@ -195,6 +151,16 @@ const TestPage: React.FC = () => {
 
     const selectedTopic = topics.find(t => t.id === selectedTopicId);
 
+    if (topicsLoading) {
+        return (
+            <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="text-2xl mb-2">⏳</div>
+                    <p className="text-gray-600">주제를 불러오는 중...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex-1 flex flex-col">
@@ -222,6 +188,7 @@ const TestPage: React.FC = () => {
                             selectedTopicId={selectedTopicId}
                             setSelectedTopicId={setSelectedTopicId}
                             onStart={startTest}
+                            isLoading={testQuestionsLoading}
                         />
                     )}
 

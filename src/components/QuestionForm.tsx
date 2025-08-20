@@ -1,17 +1,42 @@
 import React, { useState, useEffect } from "react";
-import { supabase } from "../supabaseClient";
-import type {  Question, QuestionWithTopic } from "../types/question";
+import type { Question } from "../types/question";
 import { Button, Select, Textarea, Input, Card } from './ui';
-import type {Topic} from '../types/topic.ts';
+import {
+  useTopics,
+  useQuestions,
+  useSearchQuestions,
+  useCreateQuestion,
+  useCreateQuestionsBulk,
+  useUpdateQuestion,
+  useDeleteQuestion
+} from '../hooks/useQuestions';
+
+// 검색어 하이라이트 컴포넌트
+const HighlightedText: React.FC<{ text: string; searchTerm: string }> = ({ text, searchTerm }) => {
+  if (!searchTerm.trim()) return <>{text}</>;
+
+  const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  const parts = text.split(regex);
+
+  return (
+    <>
+      {parts.map((part, index) =>
+        regex.test(part) ? (
+          <mark key={index} className="bg-yellow-200 text-yellow-900 px-1 rounded">
+            {part}
+          </mark>
+        ) : (
+          part
+        )
+      )}
+    </>
+  );
+};
 
 const QuestionForm: React.FC = () => {
-  const [topics, setTopics] = useState<Topic[]>([]);
-  const [questions, setQuestions] = useState<QuestionWithTopic[]>([]);
   const [selectedTopicId, setSelectedTopicId] = useState("");
   const [content, setContent] = useState("");
   const [english, setEnglish] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
   const [showBulkAdd, setShowBulkAdd] = useState(false);
   const [showQuestionList, setShowQuestionList] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
@@ -19,99 +44,65 @@ const QuestionForm: React.FC = () => {
   const [editEnglish, setEditEnglish] = useState("");
   const [filterTopicId, setFilterTopicId] = useState("");
 
+  // 검색 관련 상태
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isSearchMode, setIsSearchMode] = useState(false);
+  const [searchDebounce, setSearchDebounce] = useState("");
+
+  // React Query 훅들
+  const { data: topics = [], isLoading: topicsLoading } = useTopics();
+  const { data: questions = [], isLoading: questionsLoading, error: questionsError } = useQuestions(filterTopicId);
+  const { data: searchResults = [], isLoading: searchLoading } = useSearchQuestions(searchDebounce, filterTopicId);
+  const createQuestion = useCreateQuestion();
+  const createQuestionsBulk = useCreateQuestionsBulk();
+  const updateQuestion = useUpdateQuestion();
+  const deleteQuestion = useDeleteQuestion();
+
+  // 첫 번째 주제를 기본값으로 설정
+  React.useEffect(() => {
+    if (topics.length > 0 && !selectedTopicId) {
+      setSelectedTopicId(topics[0].id);
+    }
+  }, [topics, selectedTopicId]);
+
+  // 검색어 디바운싱 (500ms 지연)
   useEffect(() => {
-    fetchTopics();
-    if (showQuestionList) {
-      fetchQuestions();
-    }
-  }, [showQuestionList, filterTopicId]);
+    const timer = setTimeout(() => {
+      setSearchDebounce(searchTerm);
+      setIsSearchMode(!!searchTerm.trim());
+    }, 500);
 
-  const fetchTopics = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("topics")
-        .select("*")
-        .order("name");
-
-      if (error) throw error;
-      setTopics(data || []);
-      if (data && data.length > 0) {
-        setSelectedTopicId(data[0].id);
-      }
-    } catch (error) {
-      console.error("주제를 불러오는 중 오류:", error);
-    }
-  };
-
-  const fetchQuestions = async () => {
-    try {
-      let query = supabase.from("questions").select(`
-        *,
-        topic:topics(id, name)
-      `).order("created_at", { ascending: false });
-
-      if (filterTopicId) {
-        query = query.eq("topic_id", filterTopicId);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      setQuestions(data as QuestionWithTopic[] || []);
-    } catch (error) {
-      console.error("질문을 불러오는 중 오류:", error);
-    }
-  };
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!selectedTopicId || !content.trim()) {
-      setMessage("주제와 내용을 모두 입력해주세요.");
-      return;
-    }
+    if (!selectedTopicId || !content.trim()) return;
 
-    setLoading(true);
     try {
-      const { error } = await supabase.from("questions").insert([
-        {
-          topic_id: selectedTopicId,
-          content: content.trim(),
-          english: english.trim() || null,
-        },
-      ]);
-
-      if (error) throw error;
+      await createQuestion.mutateAsync({
+        topic_id: selectedTopicId,
+        content: content.trim(),
+        english: english.trim() || null,
+      });
 
       setContent("");
       setEnglish("");
-      setMessage("질문이 성공적으로 등록되었습니다!");
-
-      // 3초 후 메시지 제거
-      setTimeout(() => setMessage(""), 3000);
     } catch (error) {
       console.error("질문 등록 중 오류:", error);
-      setMessage("질문 등록 중 오류가 발생했습니다.");
-    } finally {
-      setLoading(false);
     }
   };
 
   const bulkAddQuestions = async () => {
-    if (!selectedTopicId || !content.trim()) {
-      setMessage("주제와 내용을 모두 입력해주세요.");
-      return;
-    }
+    if (!selectedTopicId || !content.trim()) return;
 
     const questions = content
       .split("\n")
       .map((line) => line.trim())
       .filter((line) => line.length > 0)
       .map((line) => {
-        // 숫자. 로 시작하는 경우 제거
-        const cleanLine = line.replace(/^\d+\.\s*/, "");
-
-        // | 로 구분된 영어 번역 확인
+        let cleanLine = line.replace(/^\d+\.\s*/, "");
         let koreanContent = cleanLine;
         let englishTranslation = null;
 
@@ -132,77 +123,41 @@ const QuestionForm: React.FC = () => {
 
     if (questions.length === 0) return;
 
-    setLoading(true);
     try {
-      const { error } = await supabase.from("questions").insert(questions);
-
-      if (error) throw error;
-
+      await createQuestionsBulk.mutateAsync(questions);
       setContent("");
       setEnglish("");
       setShowBulkAdd(false);
-      setMessage(`${questions.length}개의 질문이 성공적으로 등록되었습니다!`);
-
-      setTimeout(() => setMessage(""), 3000);
     } catch (error) {
       console.error("일괄 질문 등록 중 오류:", error);
-      setMessage("질문 등록 중 오류가 발생했습니다.");
-    } finally {
-      setLoading(false);
     }
   };
 
-  const updateQuestion = async () => {
+  const handleUpdateQuestion = async () => {
     if (!editingQuestion || !editContent.trim()) return;
 
-    setLoading(true);
     try {
-      const { error } = await supabase
-        .from("questions")
-        .update({
-          content: editContent.trim(),
-          english: editEnglish.trim() || null
-        })
-        .eq("id", editingQuestion.id);
-
-      if (error) throw error;
+      await updateQuestion.mutateAsync({
+        id: editingQuestion.id,
+        content: editContent.trim(),
+        english: editEnglish.trim() || null
+      });
 
       setEditingQuestion(null);
       setEditContent("");
       setEditEnglish("");
-      setMessage("질문이 성공적으로 수정되었습니다!");
-      fetchQuestions();
-
-      setTimeout(() => setMessage(""), 3000);
     } catch (error) {
       console.error("질문 수정 중 오류:", error);
-      setMessage("질문 수정 중 오류가 발생했습니다.");
-    } finally {
-      setLoading(false);
     }
   };
 
-  const deleteQuestion = async (questionId: string) => {
+  const handleDeleteQuestion = async (questionId: string) => {
     if (!confirm("이 질문을 삭제하시겠습니까?")) return;
 
-    setLoading(true);
     try {
-      const { error } = await supabase
-        .from("questions")
-        .delete()
-        .eq("id", questionId);
-
-      if (error) throw error;
-
-      setMessage("질문이 성공적으로 삭제되었습니다!");
-      fetchQuestions();
-
-      setTimeout(() => setMessage(""), 3000);
+      await deleteQuestion.mutateAsync(questionId);
     } catch (error) {
       console.error("질문 삭제 중 오류:", error);
-      setMessage("질문 삭제 중 오류가 발생했습니다.");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -217,6 +172,36 @@ const QuestionForm: React.FC = () => {
     setEditContent("");
     setEditEnglish("");
   };
+
+  // 현재 표시할 질문 목록 결정
+  const displayQuestions = isSearchMode ? searchResults : questions;
+  const isLoading = isSearchMode ? searchLoading : questionsLoading;
+
+  // 로딩 상태
+  if (topicsLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="text-2xl mb-2">⏳</div>
+          <p className="text-gray-600">주제를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 에러 상태
+  if (questionsError) {
+    return (
+      <div className="p-4">
+        <Card variant="danger" padding="md">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">❌</span>
+            <span className="font-medium">질문을 불러오는 중 오류가 발생했습니다.</span>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -263,17 +248,39 @@ const QuestionForm: React.FC = () => {
         </div>
       </div>
 
-      {/* 메시지 표시 */}
-      {message && (
-        <Card
-          variant={message.includes("성공") ? "success" : "danger"}
-          padding="md"
-        >
+      {/* 성공/에러 메시지 */}
+      {createQuestion.isSuccess && (
+        <Card variant="success" padding="md">
           <div className="flex items-center gap-2">
-            <span className="text-lg">
-              {message.includes("성공") ? "✅" : "❌"}
-            </span>
-            <span className="font-medium">{message}</span>
+            <span className="text-lg">✅</span>
+            <span className="font-medium">질문이 성공적으로 등록되었습니다!</span>
+          </div>
+        </Card>
+      )}
+
+      {createQuestionsBulk.isSuccess && (
+        <Card variant="success" padding="md">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">✅</span>
+            <span className="font-medium">{createQuestionsBulk.data}개의 질문이 성공적으로 등록되었습니다!</span>
+          </div>
+        </Card>
+      )}
+
+      {updateQuestion.isSuccess && (
+        <Card variant="success" padding="md">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">✅</span>
+            <span className="font-medium">질문이 성공적으로 수정되었습니다!</span>
+          </div>
+        </Card>
+      )}
+
+      {deleteQuestion.isSuccess && (
+        <Card variant="success" padding="md">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">✅</span>
+            <span className="font-medium">질문이 성공적으로 삭제되었습니다!</span>
           </div>
         </Card>
       )}
@@ -281,75 +288,119 @@ const QuestionForm: React.FC = () => {
       {/* 질문 목록 */}
       {showQuestionList && (
         <div className="space-y-4">
-          {/* 필터 */}
+          {/* 필터와 검색 */}
           <Card variant="primary" padding="md">
-            <Select
-              label="주제별 필터"
-              icon="🔍"
-              value={filterTopicId}
-              onChange={(e) => setFilterTopicId(e.target.value)}
-            >
-              <option value="">모든 주제</option>
-              {topics.map((topic) => (
-                <option key={topic.id} value={topic.id}>
-                  {topic.name}
-                </option>
-              ))}
-            </Select>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Select
+                  label="주제별 필터"
+                  icon="🔍"
+                  value={filterTopicId}
+                  onChange={(e) => setFilterTopicId(e.target.value)}
+                >
+                  <option value="">모든 주제</option>
+                  {topics.map((topic) => (
+                    <option key={topic.id} value={topic.id}>
+                      {topic.name}
+                    </option>
+                  ))}
+                </Select>
+
+                <Input
+                  label="질문 검색"
+                  icon="🔎"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="질문 내용이나 영어로 검색하세요"
+                />
+              </div>
+
+              {/* 검색 상태 표시 */}
+              {isSearchMode && (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-[#228BE6]">🔍</span>
+                  <span className="text-gray-700">
+                    <strong>"{searchTerm}"</strong> 검색 결과: {displayQuestions.length}개
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSearchTerm("");
+                      setIsSearchMode(false);
+                    }}
+                    icon="✕"
+                  >
+                    검색 지우기
+                  </Button>
+                </div>
+              )}
+            </div>
           </Card>
 
           {/* 질문 목록 */}
           <Card>
             <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 -m-4 md:-m-6 mb-4 md:mb-6">
               <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                📋 질문 목록 ({questions.length}개)
+                📋 질문 목록 ({displayQuestions.length}개)
+                {isLoading && <span className="text-sm text-gray-500">검색 중...</span>}
+                {isSearchMode && !isLoading && (
+                  <span className="text-sm text-[#228BE6]">검색 결과</span>
+                )}
               </h3>
             </div>
 
             <div className="space-y-4 max-h-96 overflow-y-auto">
-              {questions.map((question, index) => (
+              {displayQuestions.map((question, index) => (
                 <div
                   key={question.id}
                   className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   {editingQuestion?.id === question.id ? (
                     <div className="space-y-3">
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <span>📚 {question.topic.name}</span>
-                      </div>
-
-                      <Textarea
-                        label="질문 내용"
-                        value={editContent}
-                        onChange={(e) => setEditContent(e.target.value)}
-                        rows={3}
-                      />
-
-                      <Input
-                        label="영어 (선택사항)"
-                        value={editEnglish}
-                        onChange={(e) => setEditEnglish(e.target.value)}
-                        placeholder="영어 번역을 입력하세요"
-                      />
-
-                      <div className="flex gap-2">
-                        <Button
-                          variant="primary"
-                          onClick={updateQuestion}
-                          disabled={loading}
-                          loading={loading}
-                          icon="✅"
-                          size="sm"
-                        >
-                          저장
-                        </Button>
-                        <Button
-                          variant="secondary"
-                          onClick={cancelEdit}
-                          size="sm"
-                        >
-                          취소
-                        </Button>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-500 font-mono px-2 py-1 bg-gray-100 rounded">
+                              {String(index + 1).padStart(2, '0')}
+                            </span>
+                            <span className="text-sm text-[#228BE6] font-medium">
+                              📚 {question.topic.name}
+                            </span>
+                          </div>
+                          <Textarea
+                            label="질문 내용"
+                            icon="💬"
+                            value={editContent}
+                            onChange={(e) => setEditContent(e.target.value)}
+                            rows={2}
+                          />
+                          <Input
+                            label="영어 (선택사항)"
+                            icon="🌍"
+                            value={editEnglish}
+                            onChange={(e) => setEditEnglish(e.target.value)}
+                          />
+                        </div>
+                        <div className="flex flex-col gap-2 ml-4">
+                          <Button
+                            variant="success"
+                            size="sm"
+                            onClick={handleUpdateQuestion}
+                            loading={updateQuestion.isPending}
+                            icon="💾"
+                          >
+                            저장
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={cancelEdit}
+                            icon="✕"
+                          >
+                            취소
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ) : (
@@ -364,21 +415,26 @@ const QuestionForm: React.FC = () => {
                               📚 {question.topic.name}
                             </span>
                           </div>
-
                           <div className="text-gray-800 font-medium">
-                            {question.content}
+                            {isSearchMode ? (
+                              <HighlightedText text={question.content} searchTerm={searchTerm} />
+                            ) : (
+                              question.content
+                            )}
                           </div>
-
                           {question.english && (
                             <div className="text-gray-600 italic text-sm">
-                              {question.english}
+                              {isSearchMode ? (
+                                <HighlightedText text={question.english} searchTerm={searchTerm} />
+                              ) : (
+                                question.english
+                              )}
                             </div>
                           )}
                         </div>
-
-                        <div className="flex gap-2 ml-4">
+                        <div className="flex flex-col gap-2 ml-4">
                           <Button
-                            variant="warning"
+                            variant="primary"
                             size="sm"
                             onClick={() => startEdit(question)}
                             icon="✏️"
@@ -388,7 +444,8 @@ const QuestionForm: React.FC = () => {
                           <Button
                             variant="danger"
                             size="sm"
-                            onClick={() => deleteQuestion(question.id)}
+                            onClick={() => handleDeleteQuestion(question.id)}
+                            loading={deleteQuestion.isPending}
                             icon="🗑️"
                           >
                             삭제
@@ -400,11 +457,23 @@ const QuestionForm: React.FC = () => {
                 </div>
               ))}
 
-              {questions.length === 0 && (
+              {displayQuestions.length === 0 && !isLoading && (
                 <div className="text-center py-8">
-                  <div className="text-4xl mb-4">📝</div>
-                  <p className="text-gray-500 text-base mb-4">등록된 질문이 없습니다.</p>
-                  <p className="text-gray-400 text-sm">첫 번째 질문을 추가해보세요!</p>
+                  <div className="text-4xl mb-4">
+                    {isSearchMode ? "🔍" : "📝"}
+                  </div>
+                  <p className="text-gray-500 text-base mb-4">
+                    {isSearchMode
+                      ? `"${searchTerm}"에 대한 검색 결과가 없습니다.`
+                      : "등록된 질문이 없습니다."
+                    }
+                  </p>
+                  <p className="text-gray-400 text-sm">
+                    {isSearchMode
+                      ? "다른 키워드로 검색해보세요."
+                      : "첫 번째 질문을 추가해보세요!"
+                    }
+                  </p>
                 </div>
               )}
             </div>
@@ -454,8 +523,8 @@ const QuestionForm: React.FC = () => {
 
             <Button
               type="submit"
-              disabled={loading || !selectedTopicId || !content.trim()}
-              loading={loading}
+              disabled={!selectedTopicId || !content.trim()}
+              loading={createQuestion.isPending}
               icon="✨"
               className="w-full"
             >
@@ -507,8 +576,8 @@ const QuestionForm: React.FC = () => {
               <Button
                 variant="success"
                 onClick={bulkAddQuestions}
-                disabled={loading || !selectedTopicId || !content.trim()}
-                loading={loading}
+                disabled={!selectedTopicId || !content.trim()}
+                loading={createQuestionsBulk.isPending}
                 icon="📋"
                 className="flex-1"
               >

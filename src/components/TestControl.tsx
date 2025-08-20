@@ -7,14 +7,16 @@ interface TestControlProps {
     selectedTopicId: string;
     setSelectedTopicId: (id: string) => void;
     onStart: () => void;
+    isLoading?: boolean;
 }
 
 const TestControl: React.FC<TestControlProps> = ({
-                                                     topics,
-                                                     selectedTopicId,
-                                                     setSelectedTopicId,
-                                                     onStart,
-                                                 }) => (
+    topics,
+    selectedTopicId,
+    setSelectedTopicId,
+    onStart,
+    isLoading = false,
+}) => (
     <div className="p-4 bg-white/50">
         <Card variant="primary" padding="lg" className="max-w-2xl mx-auto">
             <div className="space-y-4">
@@ -31,12 +33,15 @@ const TestControl: React.FC<TestControlProps> = ({
                         </option>
                     ))}
                 </Select>
+
                 <Button
                     variant="success"
                     onClick={onStart}
                     icon="🚀"
                     size="lg"
                     fullWidth
+                    loading={isLoading}
+                    disabled={isLoading}
                 >
                     테스트 시작
                 </Button>
@@ -46,3 +51,4 @@ const TestControl: React.FC<TestControlProps> = ({
 );
 
 export default TestControl;
+
