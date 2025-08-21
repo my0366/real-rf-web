@@ -9,6 +9,8 @@ interface TestControlProps {
     setSelectedTopicIds: (ids: string[]) => void;
     isMultiSelectMode: boolean;
     setIsMultiSelectMode: (mode: boolean) => void;
+    isStopwatchMode: boolean;
+    setIsStopwatchMode: (mode: boolean) => void;
     onStart: () => void;
     isLoading: boolean;
 }
@@ -19,6 +21,8 @@ const TestControl: React.FC<TestControlProps> = ({
                                                      setSelectedTopicIds,
                                                      isMultiSelectMode,
                                                      setIsMultiSelectMode,
+                                                     isStopwatchMode,
+                                                     setIsStopwatchMode,
                                                      onStart,
                                                      isLoading
                                                  }) => {
@@ -98,6 +102,28 @@ const TestControl: React.FC<TestControlProps> = ({
                                     다중 선택
                                 </button>
                             </div>
+                        </div>
+
+                        {/* 스톱워치 모드 토글 */}
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <h4 className="font-medium text-gray-800">스톱워치 표시</h4>
+                                <p className="text-sm text-gray-600">테스트 중 시간을 표시합니다</p>
+                            </div>
+                            <button
+                                onClick={() => setIsStopwatchMode(!isStopwatchMode)}
+                                className={`
+                                    relative inline-flex h-6 w-11 items-center rounded-full transition-colors
+                                    ${isStopwatchMode ? 'bg-blue-600' : 'bg-gray-300'}
+                                `}
+                            >
+                                <span
+                                    className={`
+                                        inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                                        ${isStopwatchMode ? 'translate-x-6' : 'translate-x-1'}
+                                    `}
+                                />
+                            </button>
                         </div>
 
                         {/* 모드별 설명 */}

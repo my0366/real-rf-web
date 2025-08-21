@@ -17,6 +17,9 @@ const TestPage: React.FC = () => {
     const [questionCount, setQuestionCount] = useState(0);
     const [showResults, setShowResults] = useState(false);
 
+    // 스톱워치 모드 상태 추가
+    const [isStopwatchMode, setIsStopwatchMode] = useState(true);
+
     // 질문 관리 상태 (중복 방지)
     const [availableQuestions, setAvailableQuestions] = useState<QuestionWithTopic[]>([]);
     const [usedQuestions, setUsedQuestions] = useState<QuestionWithTopic[]>([]);
@@ -214,6 +217,8 @@ const TestPage: React.FC = () => {
                             setSelectedTopicIds={setSelectedTopicIds}
                             isMultiSelectMode={isMultiSelectMode}
                             setIsMultiSelectMode={setIsMultiSelectMode}
+                            isStopwatchMode={isStopwatchMode}
+                            setIsStopwatchMode={setIsStopwatchMode}
                             onStart={startTest}
                             isLoading={testQuestionsLoading}
                         />
@@ -225,6 +230,7 @@ const TestPage: React.FC = () => {
                             questionCount={questionCount}
                             totalQuestions={totalQuestionsInSet}
                             remainingQuestions={availableQuestions.length}
+                            isStopwatchMode={isStopwatchMode}
                             onStop={stopTest}
                             formatTime={formatTime}
                         />

@@ -7,18 +7,20 @@ interface TestProgressProps {
     questionCount: number;
     totalQuestions: number;
     remainingQuestions: number;
+    isStopwatchMode: boolean;
     onStop: () => void;
     formatTime: (ms: number) => string;
 }
 
 const TestProgress: React.FC<TestProgressProps> = ({
-                                                       elapsedTime,
-                                                       questionCount,
-                                                       totalQuestions,
-                                                       remainingQuestions,
-                                                       onStop,
-                                                       formatTime,
-                                                   }) => {
+    elapsedTime,
+    questionCount,
+    totalQuestions,
+    remainingQuestions,
+    isStopwatchMode,
+    onStop,
+    formatTime,
+}) => {
     const progressPercentage = totalQuestions > 0 ? (questionCount / totalQuestions) * 100 : 0;
 
     return (
@@ -38,14 +40,17 @@ const TestProgress: React.FC<TestProgressProps> = ({
                     </div>
                 </div>
 
-                {/* 통계 그리드 */}
-                <div className="grid grid-cols-3 md:grid-cols-3 gap-4">
-                    <div className="text-center">
-                        <div className="text-2xl font-bold text-[#228BE6]">
-                            {formatTime(elapsedTime)}
+                {/* 통계 그리드 - 스톱워치 모드에 따라 열 수 조정 */}
+                <div className={`grid gap-4 ${isStopwatchMode ? 'grid-cols-3' : 'grid-cols-2'}`}>
+                    {/* 스톱워치 모드일 때만 시간 표시 */}
+                    {isStopwatchMode && (
+                        <div className="text-center">
+                            <div className="text-2xl font-bold text-[#228BE6]">
+                                {formatTime(elapsedTime)}
+                            </div>
+                            <div className="text-xs text-gray-600">경과시간</div>
                         </div>
-                        <div className="text-xs text-gray-600">경과시간</div>
-                    </div>
+                    )}
 
                     <div className="text-center">
                         <div className="text-2xl font-bold text-green-600">
@@ -60,10 +65,9 @@ const TestProgress: React.FC<TestProgressProps> = ({
                         </div>
                         <div className="text-xs text-gray-600">남은질문</div>
                     </div>
-
-
                 </div>
-                <div className="flex-shrink-0  p-6">
+
+                <div className="flex-shrink-0 p-6">
                     <div className="text-center">
                         <Button
                             variant="danger"
@@ -81,5 +85,4 @@ const TestProgress: React.FC<TestProgressProps> = ({
 };
 
 export default TestProgress;
-
 
