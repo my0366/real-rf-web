@@ -40,12 +40,6 @@ const Layout: React.FC<LayoutProps> = ({children}) => {
 
         if (!confirmDelete) return;
 
-        const finalConfirm = window.confirm(
-            '⚠️ 마지막 확인\n\n계정 삭제를 진행하면:\n• 모든 주제와 질문이 삭제됩니다\n• 테스트 기록이 모두 삭제됩니다\n• 계정 복구가 불가능합니다\n\n정말 삭제하시겠습니까?'
-        );
-
-        if (!finalConfirm) return;
-
         try {
             setIsDeleting(true);
             await deleteAccount();
