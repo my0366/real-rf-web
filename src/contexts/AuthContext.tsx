@@ -139,10 +139,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({children}
         try {
             const { error } = await createSupabaseClient().auth.signInWithOAuth({
                 provider: 'kakao',
-                options: {
-                    redirectTo: `${window.location.origin}/`,
-                    // scopes: 'profile_nickname',
-                }
+
             });
 
             if (error) {
