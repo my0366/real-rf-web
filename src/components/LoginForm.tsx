@@ -5,7 +5,7 @@ import Input from './ui/Input';
 import Card from './ui/Card';
 
 export const LoginForm: React.FC = () => {
-  const { signIn, signUp, loading, error } = useAuth();
+  const { signIn, signUp, signInWithKakao, loading, error } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -37,6 +37,14 @@ export const LoginForm: React.FC = () => {
       }
     } catch (error) {
       console.error('인증 오류:', error);
+    }
+  };
+
+  const handleKakaoLogin = async () => {
+    try {
+      await signInWithKakao();
+    } catch (error) {
+      console.error('카카오 로그인 오류:', error);
     }
   };
 
@@ -119,6 +127,28 @@ export const LoginForm: React.FC = () => {
             {loading ? '처리 중...' : (isSignUp ? '회원가입' : '로그인')}
           </Button>
         </form>
+
+        {/* 소셜 로그인 구분선 */}
+        <div className="mt-6 mb-4">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-gray-50 text-gray-500">또는</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 카카오 로그인 버튼 */}
+        <Button
+          onClick={handleKakaoLogin}
+          disabled={loading}
+          className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-medium"
+        >
+          <span className="mr-2">💬</span>
+          카카오로 로그인
+        </Button>
 
         <div className="mt-4 text-center">
           <button

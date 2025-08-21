@@ -7,6 +7,7 @@ interface AuthContextType extends AuthState {
     signUp: (credentials: SignUpCredentials) => Promise<void>;
     signOut: () => Promise<void>;
     deleteAccount: () => Promise<void>;
+    signInWithKakao: () => Promise<void>;
 }
 
 const AuthContext = React.createContext<AuthContextType | null>(null);
@@ -132,12 +133,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({children}
         }
     };
 
+    const signInWithKakao = async () => {
+        setState(prev => ({ ...prev, loading: true, error: null }));
+
+        try {
+            const { error } = await createSupabaseClient().auth.signInWithOAuth({
+                provider: 'kakao',
+                options: {
+                    redirectTo: `${window.location.origin}/`,
+                    // scopes: 'profile_nickname',
+                }
+            });
+
+            if (error) {
+                setState(prev => ({ ...prev, loading: false, error: error.message }));
+                throw new Error(error.message);
+            }
+
+            // OAuth는 리다이렉트되므로 여기서 loading을 false로 설정하지 않음
+            // 리다이렉트 후 onAuthStateChange에서 처리됨
+        } catch (error) {
+            setState(prev => ({
+                ...prev,
+                loading: false,
+                error: error instanceof Error ? error.message : '카카오 로그인 중 오류가 발생했습니다.'
+            }));
+            throw error;
+        }
+    };
+
     const value = {
         ...state,
         signIn,
         signUp,
         signOut,
         deleteAccount,
+        signInWithKakao,
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
