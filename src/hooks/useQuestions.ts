@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../supabaseClient';
+import { createSupabaseClient } from '../supabaseClient';
 import type { QuestionWithTopic, } from '../types/question';
 import type {Topic} from '../types/topic.ts';
 
@@ -15,7 +15,7 @@ export const useTopics = () => {
   return useQuery({
     queryKey: QUERY_KEYS.topics,
     queryFn: async (): Promise<Topic[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await createSupabaseClient()
         .from('topics')
         .select('*')
         .order('name');
@@ -31,7 +31,7 @@ export const useCreateTopic = () => {
 
   return useMutation({
     mutationFn: async (name: string) => {
-      const { error } = await supabase.from('topics').insert([{ name: name.trim() }]);
+      const { error } = await createSupabaseClient().from('topics').insert([{ name: name.trim() }]);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -45,7 +45,7 @@ export const useCreateTopicsBulk = () => {
 
   return useMutation({
     mutationFn: async (topicNames: string[]) => {
-      const { error } = await supabase
+      const { error } = await createSupabaseClient()
         .from('topics')
         .insert(topicNames.map((name) => ({ name })));
       if (error) throw error;
@@ -62,7 +62,7 @@ export const useUpdateTopic = () => {
 
   return useMutation({
     mutationFn: async ({ id, name }: { id: string; name: string }) => {
-      const { error } = await supabase
+      const { error } = await createSupabaseClient()
         .from('topics')
         .update({ name: name.trim() })
         .eq('id', id);
@@ -79,7 +79,7 @@ export const useDeleteTopic = () => {
 
   return useMutation({
     mutationFn: async (topicId: string) => {
-      const { error } = await supabase.from('topics').delete().eq('id', topicId);
+      const { error } = await createSupabaseClient().from('topics').delete().eq('id', topicId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -95,7 +95,7 @@ export const useTestQuestions = (topicIds?: string) => {
   return useQuery({
     queryKey: QUERY_KEYS.testQuestions(topicIds),
     queryFn: async (): Promise<QuestionWithTopic[]> => {
-      let query = supabase.from('questions').select(`
+      let query = createSupabaseClient().from('questions').select(`
         *,
         topic:topics(id, name)
       `);
@@ -127,7 +127,7 @@ export const useQuestions = (filterTopicIds?: string) => {
   return useQuery({
     queryKey: ['questions', filterTopicIds],
     queryFn: async () => {
-      let query = supabase.from('questions').select(`
+      let query = createSupabaseClient().from('questions').select(`
         *,
         topic:topics(id, name)
       `).order('created_at', { ascending: false });
@@ -156,7 +156,7 @@ export const useSearchQuestions = (searchTerm: string, filterTopicIds?: string) 
   return useQuery({
     queryKey: ['questions', 'search', searchTerm, filterTopicIds],
     queryFn: async () => {
-      let query = supabase.from('questions').select(`
+      let query = createSupabaseClient().from('questions').select(`
         *,
         topic:topics(id, name)
       `).order('created_at', { ascending: false });
@@ -192,7 +192,7 @@ export const useCreateQuestion = () => {
 
   return useMutation({
     mutationFn: async (question: { topic_id: string; content: string; english?: string | null }) => {
-      const { error } = await supabase.from('questions').insert([question]);
+      const { error } = await createSupabaseClient().from('questions').insert([question]);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -207,7 +207,7 @@ export const useCreateQuestionsBulk = () => {
 
   return useMutation({
     mutationFn: async (questions: Array<{ topic_id: string; content: string; english?: string | null }>) => {
-      const { error } = await supabase.from('questions').insert(questions);
+      const { error } = await createSupabaseClient().from('questions').insert(questions);
       if (error) throw error;
       return questions.length;
     },
@@ -223,7 +223,7 @@ export const useUpdateQuestion = () => {
 
   return useMutation({
     mutationFn: async ({ id, content, english }: { id: string; content: string; english?: string | null }) => {
-      const { error } = await supabase
+      const { error } = await createSupabaseClient()
         .from('questions')
         .update({ content: content.trim(), english: english?.trim() || null })
         .eq('id', id);
@@ -241,7 +241,8 @@ export const useDeleteQuestion = () => {
 
   return useMutation({
     mutationFn: async (questionId: string) => {
-      const { error } = await supabase.from('questions').delete().eq('id', questionId);
+      const { error } = await createSupabaseClient()
+          .from('questions').delete().eq('id', questionId);
       if (error) throw error;
     },
     onSuccess: () => {
