@@ -43,6 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({children}
 
             setIsAdmin(!error && !!data);
         } catch (error) {
+            console.log('관리자 권한 확인 실패:', error);
             setIsAdmin(false);
         }
     }, []);
@@ -50,7 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({children}
     // 사용자 활성화 상태 확인 함수
     const checkUserActiveStatus = React.useCallback(async (userId: string) => {
         try {
-            const { data, error } = await createSupabaseClient()
+            const { data } = await createSupabaseClient()
                 .from('user_status')
                 .select('is_active')
                 .eq('user_id', userId)
