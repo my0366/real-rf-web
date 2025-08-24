@@ -13,7 +13,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
-    const { user, signOut, deleteAccount, loading, isAdmin } = useAuth();
+    const { signOut, deleteAccount, loading, isAdmin } = useAuth();
 
     const [isDeleting, setIsDeleting] = useState(false);
 
