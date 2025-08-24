@@ -8,6 +8,8 @@ interface AuthContextType extends AuthState {
     signOut: () => Promise<void>;
     deleteAccount: () => Promise<void>;
     signInWithKakao: () => Promise<void>;
+    isAdmin: boolean;
+    isActiveUser: boolean;
 }
 
 const AuthContext = React.createContext<AuthContextType | null>(null);
@@ -26,6 +28,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({children}
         loading: true,
         error: null,
     });
+
+    const [isAdmin, setIsAdmin] = React.useState(false);
+    const [isActiveUser, setIsActiveUser] = React.useState(false);
+
+    // 관리자 권한 확인 함수를 useCallback으로 메모이제이션
+    const checkAdminStatus = React.useCallback(async (userId: string) => {
+        try {
+            const { data, error } = await createSupabaseClient()
+                .from('admins')
+                .select('id')
+                .eq('user_id', userId)
+                .single();
+
+            setIsAdmin(!error && !!data);
+        } catch (error) {
+            setIsAdmin(false);
+        }
+    }, []);
+
+    // 사용자 활성화 상태 확인 함수
+    const checkUserActiveStatus = React.useCallback(async (userId: string) => {
+        try {
+            const { data, error } = await createSupabaseClient()
+                .from('user_status')
+                .select('is_active')
+                .eq('user_id', userId)
+                .maybeSingle(); // single() 대신 maybeSingle() 사용
+
+            console.log(data);
+            // 레코드가 없으면 false, 있으면 is_active 값 확인
+            setIsActiveUser(data?.is_active === true);
+        } catch (error) {
+            console.log('사용자 활성화 상태 확인 실패:', error);
+            setIsActiveUser(false);
+        }
+    }, []);
+
+    // 관리자 권한과 활성화 상태 확인을 위한 useEffect
+    React.useEffect(() => {
+        if (state.user?.id) {
+            checkAdminStatus(state.user.id);
+            checkUserActiveStatus(state.user.id);
+        } else {
+            setIsAdmin(false);
+            setIsActiveUser(false);
+        }
+    }, [state.user?.id, checkAdminStatus, checkUserActiveStatus]);
 
     React.useEffect(() => {
         // 초기 세션 확인
@@ -62,26 +111,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({children}
         );
 
         return () => subscription.unsubscribe();
-    }, []);
+    }, []); // 빈 의존성 배열로 한 번만 실행
 
     const signIn = async (credentials: LoginCredentials) => {
         setState(prev => ({...prev, loading: true, error: null}));
 
         const {error} = await createSupabaseClient().auth.signInWithPassword({
-            email: credentials.email,
-            password: credentials.password,
-        });
-
-        if (error) {
-            setState(prev => ({...prev, loading: false, error: error.message}));
-            throw new Error(error.message);
-        }
-    };
-
-    const signUp = async (credentials: SignUpCredentials) => {
-        setState(prev => ({...prev, loading: true, error: null}));
-
-        const {error} = await createSupabaseClient().auth.signUp({
             email: credentials.email,
             password: credentials.password,
         });
@@ -158,6 +193,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({children}
         }
     };
 
+    // 회원가입 함수
+    const signUp = async (credentials: SignUpCredentials) => {
+        setState(prev => ({ ...prev, loading: true, error: null }));
+
+        try {
+            const { error } = await createSupabaseClient().auth.signUp({
+                email: credentials.email,
+                password: credentials.password,
+            });
+
+            if (error) {
+                setState(prev => ({ ...prev, loading: false, error: error.message }));
+                throw new Error(error.message);
+            }
+
+            setState(prev => ({ ...prev, loading: false }));
+        } catch (error) {
+            setState(prev => ({
+                ...prev,
+                loading: false,
+                error: error instanceof Error ? error.message : '회원가입 중 오류가 발생했습니다.'
+            }));
+            throw error;
+        }
+    };
+
     const value = {
         ...state,
         signIn,
@@ -165,6 +226,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({children}
         signOut,
         deleteAccount,
         signInWithKakao,
+        isAdmin,
+        isActiveUser,
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

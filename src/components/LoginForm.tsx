@@ -28,7 +28,9 @@ export const LoginForm: React.FC = () => {
           password: formData.password,
           confirmPassword: formData.confirmPassword,
         });
-        alert('회원가입이 완료되었습니다. 이메일을 확인해주세요.');
+        alert('회원가입 요청이 제출되었습니다. 관리자 승인을 기다려주세요.');
+        setIsSignUp(false);
+        setFormData({ email: '', password: '', confirmPassword: '' });
       } else {
         await signIn({
           email: formData.email,

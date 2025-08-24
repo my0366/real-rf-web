@@ -1,5 +1,4 @@
 export interface MenuProps {
-    id: string;
     label: string;
     icon: string;
     path: string;
@@ -8,24 +7,32 @@ export interface MenuProps {
 
 export const menuItems: MenuProps[] = [
     {
-        id: 'test',
         label: '테스트',
         icon: '🎯',
         path: '/',
         description: 'RF 테스트'
     },
     {
-        id: 'topics',
         label: '주제 관리',
         icon: '📚',
         path: '/topics',
         description: '주제 추가 / 수정 / 삭제'
     },
     {
-        id: 'questions',
         label: '질문 관리',
         icon: '📝',
         path: '/questions',
         description: '질문 등록 / 수정/ 삭제'
+    },
+];
+
+// 관리자 전용 메뉴
+export const adminMenuItems: MenuProps[] = [
+    {
+        description: '회원가입 승인 및 관리',
+        path: '/admin/users',
+        label: '회원가입 승인',
+        icon: '👥'
     }
 ];
+

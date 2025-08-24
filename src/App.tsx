@@ -7,10 +7,12 @@ import Layout from './components/Layout';
 import TestPage from './pages/TestPage';
 import QuestionManagementPage from './pages/QuestionManagementPage';
 import TopicManagementPage from './pages/TopicManagementPage';
+import UserApprovalPage from './pages/UserApprovalPage';
+import WaitingForActivationPage from './pages/WaitingForActivationPage';
 
 const queryClient = new QueryClient();
 
-// 인증된 사용자를 위한 앱 라우터
+// 활성화된 사용자를 위한 앱 라우터
 const AuthenticatedApp: React.FC = () => {
   return (
     <Layout>
@@ -19,29 +21,17 @@ const AuthenticatedApp: React.FC = () => {
         <Route path="/test" element={<TestPage />} />
         <Route path="/questions" element={<QuestionManagementPage />} />
         <Route path="/topics" element={<TopicManagementPage />} />
-        {/* 인증된 사용자가 /login에 접근하면 홈으로 리다이렉트 */}
+        <Route path="/admin/users" element={<UserApprovalPage />} />
         <Route path="/login" element={<Navigate to="/" replace />} />
-        {/* 정의되지 않은 경로는 홈으로 리다이렉트 */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>
   );
 };
 
-// 비로그인 사용자를 위한 앱 라우터
-const UnauthenticatedApp: React.FC = () => {
-  return (
-    <Routes>
-      <Route path="/login" element={<LoginForm />} />
-      {/* 모든 다른 경로는 로그인 페이지로 리다이렉트 */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
-    </Routes>
-  );
-};
-
 // 로그인 상태에 따른 라우터
 const AppRouter: React.FC = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, isActiveUser } = useAuth();
 
   if (loading) {
     return (
@@ -54,8 +44,24 @@ const AppRouter: React.FC = () => {
     );
   }
 
-  // 로그인 상태에 따라 완전히 다른 라우터 렌더링
-  return user ? <AuthenticatedApp /> : <UnauthenticatedApp />;
+  // 로그인되지 않은 경우
+  if (!user) {
+    return (
+      <Routes>
+        <Route path="/login" element={<LoginForm />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    );
+  }
+
+  console.log('isActiveUser:', isActiveUser);
+  // 로그인되었지만 활성화되지 않은 경우
+  if (!isActiveUser) {
+    return <WaitingForActivationPage />;
+  }
+
+  // 로그인되고 활성화된 경우
+  return <AuthenticatedApp />;
 };
 
 const App: React.FC = () => {

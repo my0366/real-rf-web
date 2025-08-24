@@ -1,22 +1,21 @@
-import React, {useState} from 'react';
-import {useNavigate, useLocation} from 'react-router-dom';
-import {useAuth} from '../contexts/AuthContext';
-import {Button} from './ui';
+import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { Button } from './ui';
 import Header from './ui/Header.tsx';
-import {menuItems} from '../routes/menu.ts';
+import { menuItems, adminMenuItems } from '../routes/menu.ts';
 
 interface LayoutProps {
     children: React.ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = ({children}) => {
+const Layout: React.FC<LayoutProps> = ({ children }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
-    const {signOut, deleteAccount, loading} = useAuth();
+    const { user, signOut, deleteAccount, loading, isAdmin } = useAuth();
 
     const [isDeleting, setIsDeleting] = useState(false);
-
 
     const handleNavigation = (path: string) => {
         navigate(path);
@@ -31,7 +30,6 @@ const Layout: React.FC<LayoutProps> = ({children}) => {
             console.error('로그아웃 오류:', error);
         }
     };
-
 
     const handleDeleteAccount = async () => {
         const confirmDelete = window.confirm(
@@ -58,7 +56,7 @@ const Layout: React.FC<LayoutProps> = ({children}) => {
             {/* 메인 컨텐츠 영역 */}
             <div className="flex-1 flex flex-col">
                 {/* 헤더 */}
-                <Header setSidebarOpen={setSidebarOpen}/>
+                <Header setSidebarOpen={setSidebarOpen} />
 
                 {/* 페이지 컨텐츠 */}
                 <div className="flex-1">
@@ -95,6 +93,7 @@ const Layout: React.FC<LayoutProps> = ({children}) => {
                     {/* 네비게이션 메뉴 */}
                     <nav className="flex-1 p-4">
                         <ul className="space-y-2">
+                            {/* 일반 메뉴 */}
                             {menuItems.map((item) => (
                                 <li key={item.path}>
                                     <button
@@ -102,14 +101,51 @@ const Layout: React.FC<LayoutProps> = ({children}) => {
                                         className={`
                                             w-full text-left px-4 py-3 rounded-lg transition-colors duration-200
                                             ${location.pathname === item.path
-                                            ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                                            : 'text-gray-700 hover:bg-gray-100'
-                                        }
+                                                ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                                                : 'text-gray-700 hover:bg-gray-100'
+                                            }
                                         `}
                                     >
                                         <div className="flex items-center space-x-3">
                                             <span className="text-lg">{item.icon}</span>
                                             <span className="font-medium">{item.label}</span>
+                                        </div>
+                                    </button>
+                                </li>
+                            ))}
+
+                            {/* 관리자 메뉴 구분선 */}
+                            {isAdmin && adminMenuItems.length > 0 && (
+                                <li className="pt-4">
+                                    <div className="border-t border-gray-200 pt-4">
+                                        <div className="px-4 py-2">
+                                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                                관리자 메뉴
+                                            </p>
+                                        </div>
+                                    </div>
+                                </li>
+                            )}
+
+                            {/* 관리자 전용 메뉴 */}
+                            {isAdmin && adminMenuItems.map((item) => (
+                                <li key={item.path}>
+                                    <button
+                                        onClick={() => handleNavigation(item.path)}
+                                        className={`
+                                            w-full text-left px-4 py-3 rounded-lg transition-colors duration-200
+                                            ${location.pathname === item.path
+                                                ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                                                : 'text-gray-700 hover:bg-purple-50'
+                                            }
+                                        `}
+                                    >
+                                        <div className="flex items-center space-x-3">
+                                            <span className="text-lg">{item.icon}</span>
+                                            <span className="font-medium">{item.label}</span>
+                                            <span className="ml-auto text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded-full">
+                                                관리자
+                                            </span>
                                         </div>
                                     </button>
                                 </li>
