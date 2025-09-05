@@ -16,9 +16,9 @@ export const useTopics = () => {
     queryKey: QUERY_KEYS.topics,
     queryFn: async (): Promise<Topic[]> => {
       const { data, error } = await createSupabaseClient()
-        .from('topics')
-        .select('*')
-        .order('name');
+          .from('topics')
+          .select('*')
+          .order('created_at', { ascending: true });
 
       if (error) throw error;
       return data || [];
@@ -46,8 +46,8 @@ export const useCreateTopicsBulk = () => {
   return useMutation({
     mutationFn: async (topicNames: string[]) => {
       const { error } = await createSupabaseClient()
-        .from('topics')
-        .insert(topicNames.map((name) => ({ name })));
+          .from('topics')
+          .insert(topicNames.map((name) => ({ name })));
       if (error) throw error;
       return topicNames.length;
     },
@@ -63,9 +63,9 @@ export const useUpdateTopic = () => {
   return useMutation({
     mutationFn: async ({ id, name }: { id: string; name: string }) => {
       const { error } = await createSupabaseClient()
-        .from('topics')
-        .update({ name: name.trim() })
-        .eq('id', id);
+          .from('topics')
+          .update({ name: name.trim() })
+          .eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -130,7 +130,7 @@ export const useQuestions = (filterTopicIds?: string) => {
       let query = createSupabaseClient().from('questions').select(`
         *,
         topic:topics(id, name)
-      `).order('created_at', { ascending: false });
+      `).order('created_at', { ascending: true });
 
       if (filterTopicIds) {
         // 쉼표로 구분된 문자열을 배열로 변환
@@ -159,7 +159,7 @@ export const useSearchQuestions = (searchTerm: string, filterTopicIds?: string) 
       let query = createSupabaseClient().from('questions').select(`
         *,
         topic:topics(id, name)
-      `).order('created_at', { ascending: false });
+      `).order('created_at', { ascending: true });
 
       if (filterTopicIds) {
         // 쉼표로 구분된 문자열을 배열로 변환
@@ -224,9 +224,9 @@ export const useUpdateQuestion = () => {
   return useMutation({
     mutationFn: async ({ id, content, english }: { id: string; content: string; english?: string | null }) => {
       const { error } = await createSupabaseClient()
-        .from('questions')
-        .update({ content: content.trim(), english: english?.trim() || null })
-        .eq('id', id);
+          .from('questions')
+          .update({ content: content.trim(), english: english?.trim() || null })
+          .eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
