@@ -1,6 +1,6 @@
 {
   "name": "RF Check",
-  "short_name": "RandomQ",
+  "short_name": "RF Check",
   "description": "주제별 질문을 관리하고 테스트할 수 있는 웹 애플리케이션",
   "start_url": "/",
   "display": "standalone",
