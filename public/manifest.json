@@ -1,0 +1,26 @@
+{
+  "name": "RF Check",
+  "short_name": "RandomQ",
+  "description": "주제별 질문을 관리하고 테스트할 수 있는 웹 애플리케이션",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3B82F6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.svg",
+      "sizes": "120x120",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["education", "productivity", "utilities"],
+  "lang": "ko"
+}
+
