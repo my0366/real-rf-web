@@ -1,0 +1,10 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="120" height="120" rx="24" fill="#3B82F6"/>
+  <circle cx="60" cy="50" r="25" stroke="white" stroke-width="3" fill="none"/>
+  <circle cx="60" cy="50" r="15" stroke="white" stroke-width="2" fill="none"/>
+  <circle cx="60" cy="50" r="5" fill="white"/>
+  <path d="M60 80L50 90H70L60 80Z" fill="white"/>
+  <rect x="20" y="95" width="80" height="5" rx="2.5" fill="white"/>
+  <text x="60" y="110" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="8" font-weight="bold">RANDOM Q</text>
+</svg>
+
