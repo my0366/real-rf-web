@@ -1,7 +1,7 @@
 // QuestionCard.tsx
-import React from "react";
-import { Card } from "../components/ui";
-import type { QuestionWithTopic } from "../types/question";
+import React from 'react';
+import {Card} from '../components/ui';
+import type {QuestionWithTopic} from '../types/question';
 
 interface QuestionCardProps {
     question: QuestionWithTopic;
@@ -13,13 +13,13 @@ interface QuestionCardProps {
 }
 
 const QuestionCard: React.FC<QuestionCardProps> = ({
-    question,
-    isTestMode,
-    onClick,
-    currentQuestionNumber,
-    totalQuestions,
-    onMarkAsUnknown, // 새로 추가된 prop
-}) => {
+                                                       question,
+                                                       isTestMode,
+                                                       onClick,
+                                                       currentQuestionNumber,
+                                                       totalQuestions,
+                                                       onMarkAsUnknown, // 새로 추가된 prop
+                                                   }) => {
     // 모르는 문제 버튼 클릭 시 이벤트 전파 방지
     const handleMarkAsUnknown = (e: React.MouseEvent) => {
         e.stopPropagation(); // 카드 클릭 이벤트 방지
@@ -30,23 +30,14 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         <Card
             className={`w-full max-w-3xl min-h-[200px] flex flex-col items-center justify-center border-2 transition-all ${
                 isTestMode
-                    ? "cursor-pointer hover:shadow-xl border-[#228BE6]/30 hover:border-[#228BE6]/50 border-dashed active:scale-98"
-                    : "border-gray-300"
+                    ? 'cursor-pointer hover:shadow-xl border-[#228BE6]/30 hover:border-[#228BE6]/50 border-dashed active:scale-98'
+                    : 'border-gray-300'
             }`}
             onClick={onClick}
             padding="lg"
         >
             <div className="text-center space-y-6 max-w-2xl relative w-full">
-                {/* 모르는 문제 버튼 - 테스트 모드일 때만 표시 */}
-                {isTestMode && onMarkAsUnknown && (
-                    <button
-                        onClick={handleMarkAsUnknown}
-                        className="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium transition-colors duration-200 flex items-center gap-1"
-                    >
-                        <span>❓</span>
-                        <span>모르는 문제</span>
-                    </button>
-                )}
+
 
                 {/* 질문 번호와 주제 */}
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -58,7 +49,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                         </div>
                     )}
 
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#228BE6]/10 rounded-full border border-[#228BE6]/20">
+                    <div
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-[#228BE6]/10 rounded-full border border-[#228BE6]/20">
                         <span className="text-[#228BE6] font-medium">
                             📚 {question.topic.name}
                         </span>
@@ -85,6 +77,16 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                             <span>화면을 터치하면 다음 질문으로 넘어갑니다</span>
                         </div>
                     </div>
+                )}
+                {/* 모르는 문제 버튼 - 테스트 모드일 때만 표시 */}
+                {isTestMode && onMarkAsUnknown && (
+                    <button
+                        onClick={handleMarkAsUnknown}
+                        className="w-full p-4 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center gap-2 font-medium transition-colors"
+                    >
+
+                        <span className="text-xl">모르겠어요</span>
+                    </button>
                 )}
             </div>
         </Card>
