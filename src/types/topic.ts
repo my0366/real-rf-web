@@ -1,5 +1,6 @@
 export interface Topic {
-    id: string;
-    name: string;
-    created_at: string;
+  id: string;
+  name: string;
+  category: string;
+  created_at: string;
 }

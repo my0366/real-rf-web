@@ -13,6 +13,8 @@ interface TestControlProps {
   setIsStopwatchMode: (mode: boolean) => void;
   onStart: () => void;
   isLoading: boolean;
+  selectedCategory?: string;
+  setSelectedCategory?: (category: string) => void;
 }
 
 const TestControl: React.FC<TestControlProps> = ({
@@ -25,7 +27,21 @@ const TestControl: React.FC<TestControlProps> = ({
   setIsStopwatchMode,
   onStart,
   isLoading,
+  selectedCategory = '전체',
+  setSelectedCategory,
 }) => {
+  // 카테고리별로 필터링된 주제 목록
+  const filteredTopics =
+    selectedCategory === '전체'
+      ? topics
+      : topics.filter(t => t.category === selectedCategory);
+
+  // 고유한 카테고리 목록 추출
+  const categories = [
+    '전체',
+    ...Array.from(new Set(topics.map(t => t.category))),
+  ];
+
   // 주제 선택 핸들러
   const handleTopicSelect = (topicId: string) => {
     if (isMultiSelectMode) {
@@ -77,6 +93,31 @@ const TestControl: React.FC<TestControlProps> = ({
 
       <Card variant="primary" padding="lg">
         <div className="space-y-6">
+          {/* 카테고리 필터 */}
+          <div>
+            <label className="block text-lg font-medium text-gray-800 mb-4 flex items-center gap-2">
+              <span className="text-xl">📂</span>
+              카테고리 선택
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {categories.map(category => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory?.(category)}
+                  className={`
+                    px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
+                    ${
+                      selectedCategory === category
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : 'bg-gray-100 text-gray-800 hover:bg-blue-50'
+                    }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* 선택 모드 토글 - 더 직관적으로 개선 */}
           <div className="space-y-4">
             <div className="flex items-center justify-center">
@@ -117,15 +158,15 @@ const TestControl: React.FC<TestControlProps> = ({
               <button
                 onClick={() => setIsStopwatchMode(!isStopwatchMode)}
                 className={`
-                                    relative inline-flex h-6 w-11 items-center rounded-full transition-colors
-                                    ${isStopwatchMode ? 'bg-blue-600' : 'bg-gray-300'}
-                                `}
+                  relative inline-flex h-6 w-11 items-center rounded-full transition-colors
+                  ${isStopwatchMode ? 'bg-blue-600' : 'bg-gray-300'}
+                `}
               >
                 <span
                   className={`
-                                        inline-block h-4 w-4 transform rounded-full bg-white transition-transform
-                                        ${isStopwatchMode ? 'translate-x-6' : 'translate-x-1'}
-                                    `}
+                    inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                    ${isStopwatchMode ? 'translate-x-6' : 'translate-x-1'}
+                  `}
                 />
               </button>
             </div>
@@ -161,7 +202,7 @@ const TestControl: React.FC<TestControlProps> = ({
 
                 <div className="flex items-center gap-2">
                   {isMultiSelectMode &&
-                    selectedTopicIds.length < topics.length && (
+                    selectedTopicIds.length < filteredTopics.length && (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -193,7 +234,7 @@ const TestControl: React.FC<TestControlProps> = ({
                 주제를 선택하세요
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {topics.map(topic => (
+                {filteredTopics.map(topic => (
                   <label
                     key={topic.id}
                     className="relative cursor-pointer group transition-all duration-200"
@@ -262,7 +303,7 @@ const TestControl: React.FC<TestControlProps> = ({
                 원하는 주제들을 모두 선택하세요
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-80 overflow-y-auto">
-                {topics.map(topic => (
+                {filteredTopics.map(topic => (
                   <label
                     key={topic.id}
                     className="relative cursor-pointer group transition-all duration-200"

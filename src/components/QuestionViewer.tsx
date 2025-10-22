@@ -1,24 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Select, Input, Card } from './ui';
 import {
   useTopics,
   useQuestions,
   useSearchQuestions,
 } from '../hooks/useQuestions';
-
 // 검색어 하이라이트 컴포넌트
 const HighlightedText: React.FC<{ text: string; searchTerm: string }> = ({
   text,
   searchTerm,
 }) => {
   if (!searchTerm.trim()) return <>{text}</>;
-
   const regex = new RegExp(
     `(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`,
     'gi'
   );
   const parts = text.split(regex);
-
   return (
     <>
       {parts.map((part, index) =>
@@ -36,13 +33,10 @@ const HighlightedText: React.FC<{ text: string; searchTerm: string }> = ({
     </>
   );
 };
-
 const QuestionViewer: React.FC = () => {
   const [filterTopicId, setFilterTopicId] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [isSearchMode, setIsSearchMode] = useState(false);
   const [searchDebounce, setSearchDebounce] = useState('');
-
   // React Query 훅들
   const { data: topics = [], isLoading: topicsLoading } = useTopics();
   const {
@@ -52,21 +46,18 @@ const QuestionViewer: React.FC = () => {
   } = useQuestions(filterTopicId);
   const { data: searchResults = [], isLoading: searchLoading } =
     useSearchQuestions(searchDebounce, filterTopicId);
-
-  // 검색어 디바운싱 (500ms 지연)
+  // 검색어 디바운싱
   useEffect(() => {
     const timer = setTimeout(() => {
       setSearchDebounce(searchTerm);
-      setIsSearchMode(!!searchTerm.trim());
-    }, 500);
-
+    }, 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
-
-  // 현재 표시할 질문 목록 결정
+  // 검색 모드 판단
+  const isSearchMode = searchTerm.trim().length > 0;
+  // 표시할 질문 목록 결정
   const displayQuestions = isSearchMode ? searchResults : questions;
   const isLoading = isSearchMode ? searchLoading : questionsLoading;
-
   // 로딩 상태
   if (topicsLoading) {
     return (
@@ -78,7 +69,6 @@ const QuestionViewer: React.FC = () => {
       </div>
     );
   }
-
   // 에러 상태
   if (questionsError) {
     return (
@@ -94,7 +84,6 @@ const QuestionViewer: React.FC = () => {
       </div>
     );
   }
-
   return (
     <div className="space-y-4 md:space-y-6">
       {/* 헤더 */}
@@ -104,7 +93,6 @@ const QuestionViewer: React.FC = () => {
           등록된 질문들을 카드 형식으로 확인하세요
         </p>
       </div>
-
       {/* 필터와 검색 */}
       <Card variant="primary" padding="md">
         <div className="space-y-4">
@@ -121,15 +109,13 @@ const QuestionViewer: React.FC = () => {
                 </option>
               ))}
             </Select>
-
             <Input
               label="검색"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              placeholder="질문 내용이나 영어로 검색하세요"
+              placeholder="질문 내용 또는 영어 번역 검색..."
             />
           </div>
-
           {/* 검색 상태 표시 */}
           {isSearchMode && (
             <div className="flex items-center gap-2 text-sm">
@@ -143,32 +129,32 @@ const QuestionViewer: React.FC = () => {
                 size="sm"
                 onClick={() => {
                   setSearchTerm('');
-                  setIsSearchMode(false);
                 }}
                 icon="✕"
               >
-                검색 지우기
+                검색 취소
               </Button>
             </div>
           )}
         </div>
       </Card>
-
-      {/* 카드 그리드 */}
+      {/* 질문 목록 */}
       <div>
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            🎴 질문 카드 ({displayQuestions.length}개)
-            {isLoading && (
-              <span className="text-sm text-gray-500">검색 중...</span>
-            )}
-            {isSearchMode && !isLoading && (
-              <span className="text-sm text-[#228BE6]">검색 결과</span>
-            )}
-          </h3>
-        </div>
-
-        {displayQuestions.length === 0 && !isLoading ? (
+        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <span className="text-xl">🎴</span>
+          질문 목록 ({displayQuestions.length}개)
+          {isSearchMode && !isLoading && (
+            <span className="text-sm text-[#228BE6]">검색 결과</span>
+          )}
+        </h3>
+        {isLoading ? (
+          <Card>
+            <div className="text-center py-12">
+              <div className="text-2xl mb-2">⏳</div>
+              <p className="text-gray-600">질문을 불러오는 중...</p>
+            </div>
+          </Card>
+        ) : displayQuestions.length === 0 ? (
           <Card>
             <div className="text-center py-12">
               <div className="text-6xl mb-4">{isSearchMode ? '🔍' : '🎴'}</div>
@@ -202,7 +188,6 @@ const QuestionViewer: React.FC = () => {
                       #{String(index + 1).padStart(3, '0')}
                     </span>
                   </div>
-
                   {/* 질문 내용 */}
                   <div className="space-y-2">
                     <div className="text-lg font-bold text-gray-900 leading-relaxed min-h-[3rem] flex items-center">
@@ -215,7 +200,6 @@ const QuestionViewer: React.FC = () => {
                         question.content
                       )}
                     </div>
-
                     {/* 영어 번역 */}
                     {question.english && (
                       <div className="pt-2 border-t border-gray-100">
@@ -237,7 +221,6 @@ const QuestionViewer: React.FC = () => {
                       </div>
                     )}
                   </div>
-
                   {/* 카드 푸터 - 날짜 정보 */}
                   {question.created_at && (
                     <div className="pt-3 border-t border-gray-100">
@@ -255,7 +238,6 @@ const QuestionViewer: React.FC = () => {
           </div>
         )}
       </div>
-
       {/* 통계 정보 */}
       {displayQuestions.length > 0 && (
         <Card variant="primary" padding="md">
@@ -290,7 +272,6 @@ const QuestionViewer: React.FC = () => {
           </div>
         </Card>
       )}
-
       {/* 도움말 */}
       <Card variant="warning" padding="md">
         <h4 className="text-sm font-semibold text-yellow-800 mb-2 flex items-center gap-2">
@@ -306,5 +287,4 @@ const QuestionViewer: React.FC = () => {
     </div>
   );
 };
-
 export default QuestionViewer;

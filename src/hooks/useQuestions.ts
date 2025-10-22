@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createSupabaseClient } from '../supabaseClient';
-import type { QuestionWithTopic, } from '../types/question';
-import type {Topic} from '../types/topic.ts';
+import type { QuestionWithTopic } from '../types/question';
+import type { Topic } from '../types/topic.ts';
 
 // Query Keys
 export const QUERY_KEYS = {
@@ -16,9 +16,9 @@ export const useTopics = () => {
     queryKey: QUERY_KEYS.topics,
     queryFn: async (): Promise<Topic[]> => {
       const { data, error } = await createSupabaseClient()
-          .from('topics')
-          .select('*')
-          .order('created_at', { ascending: true });
+        .from('topics')
+        .select('*')
+        .order('created_at', { ascending: true });
 
       if (error) throw error;
       return data || [];
@@ -30,8 +30,16 @@ export const useCreateTopic = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (name: string) => {
-      const { error } = await createSupabaseClient().from('topics').insert([{ name: name.trim() }]);
+    mutationFn: async ({
+      name,
+      category,
+    }: {
+      name: string;
+      category: string;
+    }) => {
+      const { error } = await createSupabaseClient()
+        .from('topics')
+        .insert([{ name: name.trim(), category }]);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -44,10 +52,16 @@ export const useCreateTopicsBulk = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (topicNames: string[]) => {
+    mutationFn: async ({
+      topicNames,
+      category,
+    }: {
+      topicNames: string[];
+      category: string;
+    }) => {
       const { error } = await createSupabaseClient()
-          .from('topics')
-          .insert(topicNames.map((name) => ({ name })));
+        .from('topics')
+        .insert(topicNames.map(name => ({ name, category })));
       if (error) throw error;
       return topicNames.length;
     },
@@ -61,11 +75,19 @@ export const useUpdateTopic = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, name }: { id: string; name: string }) => {
+    mutationFn: async ({
+      id,
+      name,
+      category,
+    }: {
+      id: string;
+      name: string;
+      category: string;
+    }) => {
       const { error } = await createSupabaseClient()
-          .from('topics')
-          .update({ name: name.trim() })
-          .eq('id', id);
+        .from('topics')
+        .update({ name: name.trim(), category })
+        .eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -79,7 +101,10 @@ export const useDeleteTopic = () => {
 
   return useMutation({
     mutationFn: async (topicId: string) => {
-      const { error } = await createSupabaseClient().from('topics').delete().eq('id', topicId);
+      const { error } = await createSupabaseClient()
+        .from('topics')
+        .delete()
+        .eq('id', topicId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -127,10 +152,15 @@ export const useQuestions = (filterTopicIds?: string) => {
   return useQuery({
     queryKey: ['questions', filterTopicIds],
     queryFn: async () => {
-      let query = createSupabaseClient().from('questions').select(`
+      let query = createSupabaseClient()
+        .from('questions')
+        .select(
+          `
         *,
         topic:topics(id, name)
-      `).order('created_at', { ascending: true });
+      `
+        )
+        .order('created_at', { ascending: true });
 
       if (filterTopicIds) {
         // 쉼표로 구분된 문자열을 배열로 변환
@@ -147,19 +177,27 @@ export const useQuestions = (filterTopicIds?: string) => {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as QuestionWithTopic[] || [];
+      return (data as QuestionWithTopic[]) || [];
     },
   });
 };
 
-export const useSearchQuestions = (searchTerm: string, filterTopicIds?: string) => {
+export const useSearchQuestions = (
+  searchTerm: string,
+  filterTopicIds?: string
+) => {
   return useQuery({
     queryKey: ['questions', 'search', searchTerm, filterTopicIds],
     queryFn: async () => {
-      let query = createSupabaseClient().from('questions').select(`
+      let query = createSupabaseClient()
+        .from('questions')
+        .select(
+          `
         *,
         topic:topics(id, name)
-      `).order('created_at', { ascending: true });
+      `
+        )
+        .order('created_at', { ascending: true });
 
       if (filterTopicIds) {
         // 쉼표로 구분된 문자열을 배열로 변환
@@ -176,12 +214,14 @@ export const useSearchQuestions = (searchTerm: string, filterTopicIds?: string) 
 
       // 검색어가 있으면 content 또는 english 필드에서 검색
       if (searchTerm.trim()) {
-        query = query.or(`content.ilike.%${searchTerm}%,english.ilike.%${searchTerm}%`);
+        query = query.or(
+          `content.ilike.%${searchTerm}%,english.ilike.%${searchTerm}%`
+        );
       }
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as QuestionWithTopic[] || [];
+      return (data as QuestionWithTopic[]) || [];
     },
     enabled: !!searchTerm.trim(), // 검색어가 있을 때만 실행
   });
@@ -191,8 +231,14 @@ export const useCreateQuestion = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (question: { topic_id: string; content: string; english?: string | null }) => {
-      const { error } = await createSupabaseClient().from('questions').insert([question]);
+    mutationFn: async (question: {
+      topic_id: string;
+      content: string;
+      english?: string | null;
+    }) => {
+      const { error } = await createSupabaseClient()
+        .from('questions')
+        .insert([question]);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -206,8 +252,16 @@ export const useCreateQuestionsBulk = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (questions: Array<{ topic_id: string; content: string; english?: string | null }>) => {
-      const { error } = await createSupabaseClient().from('questions').insert(questions);
+    mutationFn: async (
+      questions: Array<{
+        topic_id: string;
+        content: string;
+        english?: string | null;
+      }>
+    ) => {
+      const { error } = await createSupabaseClient()
+        .from('questions')
+        .insert(questions);
       if (error) throw error;
       return questions.length;
     },
@@ -222,11 +276,19 @@ export const useUpdateQuestion = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, content, english }: { id: string; content: string; english?: string | null }) => {
+    mutationFn: async ({
+      id,
+      content,
+      english,
+    }: {
+      id: string;
+      content: string;
+      english?: string | null;
+    }) => {
       const { error } = await createSupabaseClient()
-          .from('questions')
-          .update({ content: content.trim(), english: english?.trim() || null })
-          .eq('id', id);
+        .from('questions')
+        .update({ content: content.trim(), english: english?.trim() || null })
+        .eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -242,7 +304,9 @@ export const useDeleteQuestion = () => {
   return useMutation({
     mutationFn: async (questionId: string) => {
       const { error } = await createSupabaseClient()
-          .from('questions').delete().eq('id', questionId);
+        .from('questions')
+        .delete()
+        .eq('id', questionId);
       if (error) throw error;
     },
     onSuccess: () => {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Input, Textarea, Card } from './ui';
+import { Button, Input, Textarea, Card, Select } from './ui';
 import {
   useTopics,
   useCreateTopic,
@@ -9,11 +9,20 @@ import {
 } from '../hooks/useQuestions';
 import type { Topic } from '../types/topic.ts';
 
+// 카테고리 옵션을 한 곳에서 관리
+const CATEGORY_OPTIONS = [
+  { value: '리얼액션', label: '리얼액션' },
+  { value: '토익', label: '토익' },
+] as const;
+
 const TopicManager: React.FC = () => {
   const [newTopicName, setNewTopicName] = useState('');
+  const [newTopicCategory, setNewTopicCategory] = useState('리얼액션');
   const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
   const [editName, setEditName] = useState('');
+  const [editCategory, setEditCategory] = useState('');
   const [bulkText, setBulkText] = useState('');
+  const [bulkCategory, setBulkCategory] = useState('리얼액션');
   const [showBulkAdd, setShowBulkAdd] = useState(false);
 
   // React Query 훅들
@@ -27,8 +36,12 @@ const TopicManager: React.FC = () => {
     if (!newTopicName.trim()) return;
 
     try {
-      await createTopic.mutateAsync(newTopicName.trim());
+      await createTopic.mutateAsync({
+        name: newTopicName.trim(),
+        category: newTopicCategory,
+      });
       setNewTopicName('');
+      setNewTopicCategory('리얼액션');
     } catch (error) {
       console.error('주제 추가 중 오류:', error);
     }
@@ -41,10 +54,12 @@ const TopicManager: React.FC = () => {
       await updateTopic.mutateAsync({
         id: editingTopic.id,
         name: editName.trim(),
+        category: editCategory,
       });
 
       setEditingTopic(null);
       setEditName('');
+      setEditCategory('');
     } catch (error) {
       console.error('주제 수정 중 오류:', error);
     }
@@ -77,8 +92,12 @@ const TopicManager: React.FC = () => {
     if (topicNames.length === 0) return;
 
     try {
-      await createTopicsBulk.mutateAsync(topicNames);
+      await createTopicsBulk.mutateAsync({
+        topicNames,
+        category: bulkCategory,
+      });
       setBulkText('');
+      setBulkCategory('리얼액션');
       setShowBulkAdd(false);
     } catch (error) {
       console.error('일괄 주제 추가 중 오류:', error);
@@ -88,11 +107,13 @@ const TopicManager: React.FC = () => {
   const startEdit = (topic: Topic) => {
     setEditingTopic(topic);
     setEditName(topic.name);
+    setEditCategory(topic.category || '리얼액션');
   };
 
   const cancelEdit = () => {
     setEditingTopic(null);
     setEditName('');
+    setEditCategory('');
   };
 
   // 로딩 상태
@@ -198,6 +219,17 @@ const TopicManager: React.FC = () => {
               className="flex-1"
               onKeyPress={e => e.key === 'Enter' && addTopic()}
             />
+            <Select
+              value={newTopicCategory}
+              onChange={e => setNewTopicCategory(e.target.value)}
+              className="min-w-[120px]"
+            >
+              {CATEGORY_OPTIONS.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
             <Button
               onClick={addTopic}
               disabled={!newTopicName.trim()}
@@ -224,6 +256,17 @@ const TopicManager: React.FC = () => {
               rows={6}
               helpText="숫자로 시작하는 번호는 자동으로 제거됩니다"
             />
+            <Select
+              value={bulkCategory}
+              onChange={e => setBulkCategory(e.target.value)}
+              className="min-w-[120px]"
+            >
+              {CATEGORY_OPTIONS.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 variant="success"
@@ -277,6 +320,17 @@ const TopicManager: React.FC = () => {
                       autoFocus
                       placeholder="주제 이름을 입력하세요"
                     />
+                    <Select
+                      value={editCategory}
+                      onChange={e => setEditCategory(e.target.value)}
+                      className="min-w-[120px]"
+                    >
+                      {CATEGORY_OPTIONS.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </Select>
                     <div className="flex flex-col sm:flex-row gap-2">
                       <Button
                         variant="success"
@@ -307,6 +361,9 @@ const TopicManager: React.FC = () => {
                       </span>
                       <span className="text-gray-800 font-medium text-base truncate">
                         {topic.name}
+                      </span>
+                      <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-medium flex-shrink-0">
+                        {topic.category}
                       </span>
                     </div>
                     <div className="flex gap-2 flex-shrink-0">
