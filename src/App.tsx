@@ -1,13 +1,15 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoginForm } from './components/LoginForm';
 import Layout from './components/Layout';
-import TestPage from './pages/TestPage';
-import QuestionManagementPage from './pages/QuestionManagementPage';
-import TopicManagementPage from './pages/TopicManagementPage';
-import UserApprovalPage from './pages/UserApprovalPage';
+import { RouteManager } from './routes/route';
 import WaitingForActivationPage from './pages/WaitingForActivationPage';
 
 const queryClient = new QueryClient();
@@ -16,15 +18,7 @@ const queryClient = new QueryClient();
 const AuthenticatedApp: React.FC = () => {
   return (
     <Layout>
-      <Routes>
-        <Route path="/" element={<TestPage />} />
-        <Route path="/test" element={<TestPage />} />
-        <Route path="/questions" element={<QuestionManagementPage />} />
-        <Route path="/topics" element={<TopicManagementPage />} />
-        <Route path="/admin/users" element={<UserApprovalPage />} />
-        <Route path="/login" element={<Navigate to="/" replace />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <RouteManager />
     </Layout>
   );
 };
@@ -54,7 +48,6 @@ const AppRouter: React.FC = () => {
     );
   }
 
-  console.log('isActiveUser:', isActiveUser);
   // 로그인되었지만 활성화되지 않은 경우
   if (!isActiveUser) {
     return <WaitingForActivationPage />;
