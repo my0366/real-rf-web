@@ -1,6 +1,6 @@
-import React from "react";
-import { Button, Card } from "./ui";
-import type { QuestionWithTopic } from "../types/question";
+import React from 'react';
+import { Button, Card } from './ui';
+import type { QuestionWithTopic } from '../types/question';
 
 interface TestResultsProps {
   results: {
@@ -14,6 +14,7 @@ interface TestResultsProps {
   onRestart: () => void;
   onNewTest: () => void;
   onShowUnknownQuestions: () => void; // 모르는 문제 보기 함수 추가
+  onReviewUnknown?: () => void; // 모르는 문제만 복습하기
 }
 
 const TestResults: React.FC<TestResultsProps> = ({
@@ -21,20 +22,21 @@ const TestResults: React.FC<TestResultsProps> = ({
   onRestart,
   onNewTest,
   onShowUnknownQuestions,
+  onReviewUnknown,
 }) => {
   const formatTime = (ms: number) => {
     const minutes = Math.floor(ms / 60000);
     const seconds = Math.floor((ms % 60000) / 1000);
     const centiseconds = Math.floor((ms % 1000) / 10);
 
-    return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}.${centiseconds.toString().padStart(2, "0")}`;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`;
   };
 
   const formatAverageTime = (ms: number) => {
-    if (ms === 0) return "00:00.00";
+    if (ms === 0) return '00:00.00';
     const seconds = Math.floor(ms / 1000);
     const centiseconds = Math.floor((ms % 1000) / 10);
-    return `${seconds.toString().padStart(2, "0")}.${centiseconds.toString().padStart(2, "0")}초`;
+    return `${seconds.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}초`;
   };
 
   return (
@@ -47,7 +49,7 @@ const TestResults: React.FC<TestResultsProps> = ({
           <p className="text-gray-600">
             {results.selectedTopics
               ? `${results.selectedTopics} 주제`
-              : "모든 주제"}{" "}
+              : '모든 주제'}{' '}
             테스트를 마쳤습니다
           </p>
         </div>
@@ -86,18 +88,31 @@ const TestResults: React.FC<TestResultsProps> = ({
         {/* 모르는 문제가 있을 때만 해결하지 못한 문제 버튼 표시 */}
         {results.unknownQuestions.length > 0 && (
           <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-            <div className="text-red-800 font-medium mb-2">
+            <div className="text-red-800 font-medium mb-3">
               ❓ {results.unknownQuestions.length}개의 모르는 문제가 있습니다
             </div>
-            <Button
-              variant="secondary"
-              onClick={onShowUnknownQuestions}
-              icon="📋"
-              size="md"
-              className="bg-red-100 hover:bg-red-200 text-red-800 border-red-300"
-            >
-              해결하지 못한 문제 보기
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button
+                variant="secondary"
+                onClick={onShowUnknownQuestions}
+                icon="📋"
+                size="md"
+                className="bg-red-100 hover:bg-red-200 text-red-800 border-red-300 flex-1"
+              >
+                문제 목록 보기
+              </Button>
+              {onReviewUnknown && (
+                <Button
+                  variant="primary"
+                  onClick={onReviewUnknown}
+                  icon="🔄"
+                  size="md"
+                  className="bg-red-600 hover:bg-red-700 text-white flex-1"
+                >
+                  복습 모드로 다시 풀기
+                </Button>
+              )}
+            </div>
           </div>
         )}
 

@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { QuestionWithTopic } from '../types/question';
 import { useTopics, useTestQuestions } from '../hooks/useQuestions';
+import {
+  markQuestionAsWrong,
+  markQuestionAsCorrect,
+  saveLearningSession,
+  sortByDifficulty,
+} from '../utils/learningStats';
 
 import TestResults from '../components/TestResults';
 import TestControl from '../components/TestControl.tsx';
@@ -41,6 +47,9 @@ const TestPage: React.FC = () => {
   // 카테고리 필터 상태 추가
   const [selectedCategory, setSelectedCategory] = useState<string>('전체');
 
+  // 복습 모드 상태 추가
+  const [isReviewMode, setIsReviewMode] = useState(false);
+
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // React Query 훅들
@@ -79,7 +88,17 @@ const TestPage: React.FC = () => {
     const questions = questionsPool || availableQuestions;
 
     if (questions.length === 0) {
-      // 모든 질문을 다 사용했을 때
+      // 모든 질문을 다 사용했을 때 - 학습 세션 저장
+      if (isTestMode) {
+        saveLearningSession({
+          date: new Date().toISOString(),
+          topicIds: selectedTopicIds,
+          totalQuestions: totalQuestionsInSet,
+          unknownQuestions: unknownQuestions.map(q => q.id),
+          duration: elapsedTime,
+        });
+      }
+
       setCurrentQuestion(null);
       setIsRunning(false);
       setIsTestMode(false);
@@ -108,31 +127,75 @@ const TestPage: React.FC = () => {
         return;
       }
 
-      setAvailableQuestions([...questions]);
+      // 난이도순으로 정렬 (어려운 것부터)
+      const sortedQuestions = sortByDifficulty(questions);
+
+      setAvailableQuestions([...sortedQuestions]);
       setUsedQuestions([]);
-      setTotalQuestionsInSet(questions.length);
+      setTotalQuestionsInSet(sortedQuestions.length);
 
       setIsTestMode(true);
+      setIsReviewMode(false);
       setQuestionCount(0);
       setElapsedTime(0);
       setIsRunning(true);
       setShowResults(false);
 
       // 첫 번째 질문 가져오기 - questions 배열을 직접 전달
-      getRandomQuestion(questions);
+      getRandomQuestion(sortedQuestions);
     } catch (error) {
       console.error('테스트 질문을 불러오는 중 오류:', error);
       alert('테스트를 시작할 수 없습니다. 다시 시도해주세요.');
     }
   };
 
+  // 복습 모드 시작 함수
+  const startReviewMode = () => {
+    if (unknownQuestions.length === 0) {
+      alert('복습할 문제가 없습니다.');
+      return;
+    }
+
+    // 난이도순으로 정렬 (어려운 것부터)
+    const sortedQuestions = sortByDifficulty(unknownQuestions);
+
+    setAvailableQuestions([...sortedQuestions]);
+    setUsedQuestions([]);
+    setTotalQuestionsInSet(sortedQuestions.length);
+    setUnknownQuestions([]); // 복습 시작 시 초기화
+
+    setIsTestMode(true);
+    setIsReviewMode(true);
+    setQuestionCount(0);
+    setElapsedTime(0);
+    setIsRunning(true);
+    setShowResults(false);
+    setShowUnknownQuestions(false);
+
+    getRandomQuestion(sortedQuestions);
+  };
+
   const stopTest = () => {
+    // 테스트 종료 시 학습 세션 저장
+    saveLearningSession({
+      date: new Date().toISOString(),
+      topicIds: selectedTopicIds,
+      totalQuestions: totalQuestionsInSet,
+      unknownQuestions: unknownQuestions.map(q => q.id),
+      duration: elapsedTime,
+    });
+
     setIsRunning(false);
     setIsTestMode(false);
     setShowResults(true);
   };
 
   const nextQuestion = () => {
+    // 현재 문제를 맞은 것으로 처리
+    if (currentQuestion) {
+      markQuestionAsCorrect(currentQuestion.id);
+    }
+
     setQuestionCount(prev => prev + 1);
     getRandomQuestion();
   };
@@ -141,8 +204,11 @@ const TestPage: React.FC = () => {
   const markAsUnknownAndNext = () => {
     if (currentQuestion) {
       setUnknownQuestions(prev => [...prev, currentQuestion]);
+      // 통계에 틀린 것으로 기록
+      markQuestionAsWrong(currentQuestion.id);
     }
-    nextQuestion();
+    setQuestionCount(prev => prev + 1);
+    getRandomQuestion();
   };
 
   const restartTest = () => {
@@ -155,6 +221,7 @@ const TestPage: React.FC = () => {
     setShowResults(false);
     setCurrentQuestion(null);
     setIsTestMode(false);
+    setIsReviewMode(false);
     setIsRunning(false);
     setQuestionCount(0);
     setElapsedTime(0);
@@ -215,6 +282,7 @@ const TestPage: React.FC = () => {
             onRestart={restartTest}
             onNewTest={newTest}
             onShowUnknownQuestions={toggleUnknownQuestions}
+            onReviewUnknown={startReviewMode}
           />
         </div>
       )}
@@ -244,6 +312,7 @@ const TestPage: React.FC = () => {
               totalQuestions={totalQuestionsInSet}
               remainingQuestions={availableQuestions.length}
               isStopwatchMode={isStopwatchMode}
+              isReviewMode={isReviewMode}
               onStop={stopTest}
               formatTime={formatTime}
             />
