@@ -71,9 +71,9 @@ const TestControl: React.FC<TestControlProps> = ({
     setSelectedTopicIds([]);
   };
 
-  // 모든 주제 선택
+  // 현재 필터링된 주제들만 선택
   const selectAllTopics = () => {
-    setSelectedTopicIds(topics.map(topic => topic.id));
+    setSelectedTopicIds(filteredTopics.map(topic => topic.id));
   };
 
   const selectedTopics = topics.filter(topic =>

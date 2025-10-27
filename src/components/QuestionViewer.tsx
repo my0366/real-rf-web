@@ -5,6 +5,12 @@ import {
   useQuestions,
   useSearchQuestions,
 } from '../hooks/useQuestions';
+import {
+  useAddUnknownWord,
+  useRemoveUnknownWord,
+  useUnknownWords,
+} from '../hooks/useUnknownWords';
+
 // 검색어 하이라이트 컴포넌트
 const HighlightedText: React.FC<{ text: string; searchTerm: string }> = ({
   text,
@@ -35,8 +41,10 @@ const HighlightedText: React.FC<{ text: string; searchTerm: string }> = ({
 };
 const QuestionViewer: React.FC = () => {
   const [filterTopicId, setFilterTopicId] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [searchDebounce, setSearchDebounce] = useState('');
+
   // React Query 훅들
   const { data: topics = [], isLoading: topicsLoading } = useTopics();
   const {
@@ -46,6 +54,39 @@ const QuestionViewer: React.FC = () => {
   } = useQuestions(filterTopicId);
   const { data: searchResults = [], isLoading: searchLoading } =
     useSearchQuestions(searchDebounce, filterTopicId);
+
+  // 모르는 단어 관련 훅
+  const { data: unknownWords = [] } = useUnknownWords(false);
+  const addUnknownWord = useAddUnknownWord();
+  const removeUnknownWord = useRemoveUnknownWord();
+
+  // 카테고리 목록 추출 (중복 제거)
+  const categories = Array.from(new Set(topics.map(t => t.category))).sort();
+
+  // 카테고리로 필터링된 주제 목록
+  const filteredTopics = filterCategory
+    ? topics.filter(t => t.category === filterCategory)
+    : topics;
+
+  // 특정 질문이 모르는 단어인지 확인
+  const isUnknownWord = (questionId: string) => {
+    return unknownWords.some(w => w.question_id === questionId);
+  };
+
+  // 모르는 단어 토글
+  const handleToggleUnknownWord = async (questionId: string) => {
+    try {
+      if (isUnknownWord(questionId)) {
+        await removeUnknownWord.mutateAsync(questionId);
+      } else {
+        await addUnknownWord.mutateAsync(questionId);
+      }
+    } catch (error) {
+      console.error('Failed to toggle unknown word:', error);
+      alert('모르는 단어 저장에 실패했습니다.');
+    }
+  };
+
   // 검색어 디바운싱
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -53,10 +94,21 @@ const QuestionViewer: React.FC = () => {
     }, 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
+
   // 검색 모드 판단
   const isSearchMode = searchTerm.trim().length > 0;
-  // 표시할 질문 목록 결정
-  const displayQuestions = isSearchMode ? searchResults : questions;
+
+  // 표시할 질문 목록 결정 (카테고리 필터 적용)
+  let displayQuestions = isSearchMode ? searchResults : questions;
+
+  // 카테고리 필터가 있을 때 추가 필터링
+  if (filterCategory && !filterTopicId) {
+    const categoryTopicIds = filteredTopics.map(t => t.id);
+    displayQuestions = displayQuestions.filter(q =>
+      categoryTopicIds.includes(q.topic_id)
+    );
+  }
+
   const isLoading = isSearchMode ? searchLoading : questionsLoading;
   // 로딩 상태
   if (topicsLoading) {
@@ -96,19 +148,41 @@ const QuestionViewer: React.FC = () => {
       {/* 필터와 검색 */}
       <Card variant="primary" padding="md">
         <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* 카테고리 선택 */}
+            <Select
+              label="카테고리 선택"
+              value={filterCategory}
+              onChange={e => {
+                setFilterCategory(e.target.value);
+                setFilterTopicId(''); // 카테고리 변경 시 주제 초기화
+              }}
+            >
+              <option value="">모든 카테고리</option>
+              {categories.map(category => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </Select>
+
+            {/* 주제 선택 */}
             <Select
               label="주제 선택"
               value={filterTopicId}
               onChange={e => setFilterTopicId(e.target.value)}
             >
-              <option value="">모든 주제</option>
-              {topics.map(topic => (
+              <option value="">
+                {filterCategory ? `${filterCategory}의 모든 주제` : '모든 주제'}
+              </option>
+              {filteredTopics.map(topic => (
                 <option key={topic.id} value={topic.id}>
                   {topic.name}
                 </option>
               ))}
             </Select>
+
+            {/* 검색 */}
             <Input
               label="검색"
               value={searchTerm}
@@ -134,6 +208,23 @@ const QuestionViewer: React.FC = () => {
               >
                 검색 취소
               </Button>
+            </div>
+          )}
+
+          {/* 활성 필터 표시 */}
+          {(filterCategory || filterTopicId) && (
+            <div className="flex items-center gap-2 text-sm flex-wrap">
+              <span className="text-gray-600">활성 필터:</span>
+              {filterCategory && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                  📁 {filterCategory}
+                </span>
+              )}
+              {filterTopicId && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  📚 {topics.find(t => t.id === filterTopicId)?.name}
+                </span>
+              )}
             </div>
           )}
         </div>
@@ -232,12 +323,28 @@ const QuestionViewer: React.FC = () => {
                       </p>
                     </div>
                   )}
+
+                  {/* 모르는 단어 버튼 */}
+                  <div className="pt-3 border-t border-gray-100">
+                    <Button
+                      variant={isUnknownWord(question.id) ? 'danger' : 'ghost'}
+                      size="sm"
+                      onClick={() => handleToggleUnknownWord(question.id)}
+                      icon={isUnknownWord(question.id) ? '✓' : '📌'}
+                      className="w-full"
+                    >
+                      {isUnknownWord(question.id)
+                        ? '모르는 단어에서 제거'
+                        : '모르는 단어 추가'}
+                    </Button>
+                  </div>
                 </div>
               </Card>
             ))}
           </div>
         )}
       </div>
+
       {/* 통계 정보 */}
       {displayQuestions.length > 0 && (
         <Card variant="primary" padding="md">
@@ -249,6 +356,14 @@ const QuestionViewer: React.FC = () => {
                 </div>
                 <div className="text-xs text-gray-600">전체 질문</div>
               </div>
+              {filterCategory && (
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-600">
+                    {filterCategory}
+                  </div>
+                  <div className="text-xs text-gray-600">선택된 카테고리</div>
+                </div>
+              )}
               {filterTopicId && (
                 <div className="text-center">
                   <div className="text-2xl font-bold text-[#228BE6]">
@@ -262,6 +377,7 @@ const QuestionViewer: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={() => {
+                setFilterCategory('');
                 setFilterTopicId('');
                 setSearchTerm('');
               }}
@@ -278,9 +394,11 @@ const QuestionViewer: React.FC = () => {
           💡 도움말
         </h4>
         <ul className="text-sm text-yellow-700 space-y-1">
+          <li>• 카테고리를 선택하면 해당 카테고리의 주제만 표시됩니다</li>
           <li>• 주제별로 질문을 필터링할 수 있습니다</li>
           <li>• 검색 기능으로 원하는 질문을 빠르게 찾을 수 있습니다</li>
           <li>• 카드를 통해 질문과 영어 번역을 확인할 수 있습니다</li>
+          <li>• 모르는 단어는 버튼을 눌러 저장하고 나중에 복습하세요</li>
           <li>• 질문 추가/편집은 "질문 관리" 페이지에서 가능합니다</li>
         </ul>
       </Card>

@@ -30,6 +30,12 @@ export const menuItems: MenuProps[] = [
     path: '/questions',
     description: '질문 등록 / 수정/ 삭제',
   },
+  {
+    label: '모르는 단어',
+    icon: '📚',
+    path: '/unknown-words',
+    description: '학습이 필요한 단어 관리',
+  },
 ];
 
 // 관리자 전용 메뉴
