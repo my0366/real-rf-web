@@ -25,7 +25,7 @@ const TestPage: React.FC = () => {
   const [showResults, setShowResults] = useState(false);
 
   // 스톱워치 모드 상태 추가
-  const [isStopwatchMode, setIsStopwatchMode] = useState(true);
+  const [isStopwatchMode, setIsStopwatchMode] = useState(false);
 
   // 질문 관리 상태 (중복 방지)
   const [availableQuestions, setAvailableQuestions] = useState<
@@ -82,6 +82,33 @@ const TestPage: React.FC = () => {
       }
     };
   }, [isRunning]);
+
+  // 키보드 이벤트 리스너 추가
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      // 테스트 모드이고 실행 중일 때만 작동
+      if (isTestMode && isRunning && currentQuestion) {
+        // 스페이스바 (keyCode 32 또는 key ' ')
+        if (event.code === 'Space' || event.key === ' ') {
+          event.preventDefault(); // 페이지 스크롤 방지
+          nextQuestion();
+        }
+        // Enter 키도 추가 (선택사항)
+        else if (event.code === 'Enter' || event.key === 'Enter') {
+          event.preventDefault();
+          nextQuestion();
+        }
+      }
+    };
+
+    // 이벤트 리스너 등록
+    window.addEventListener('keydown', handleKeyPress);
+
+    // 클린업
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [isTestMode, isRunning, currentQuestion]); // 의존성 배열에 필요한 상태 추가
 
   const getRandomQuestion = (questionsPool?: QuestionWithTopic[]) => {
     // questionsPool이 제공되면 사용하고, 아니면 현재 availableQuestions 사용
