@@ -2,12 +2,81 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createSupabaseClient } from '../supabaseClient';
 import type { QuestionWithTopic } from '../types/question';
 import type { Topic } from '../types/topic.ts';
+import type { Category } from '../types/category.ts';
 
 // Query Keys
 export const QUERY_KEYS = {
   topics: ['topics'] as const,
+  categories: ['categories'] as const,
   questions: ['questions'] as const,
   testQuestions: (topicId?: string) => ['testQuestions', topicId] as const,
+};
+
+// Categories 관련 훅들
+export const useCategories = () => {
+  return useQuery({
+    queryKey: QUERY_KEYS.categories,
+    queryFn: async (): Promise<Category[]> => {
+      const { data, error } = await createSupabaseClient()
+        .from('categories')
+        .select('*')
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+};
+
+export const useCreateCategory = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ name }: { name: string }) => {
+      const { error } = await createSupabaseClient()
+        .from('categories')
+        .insert([{ name: name.trim() }]);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.categories });
+    },
+  });
+};
+
+export const useUpdateCategory = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, name }: { id: string; name: string }) => {
+      const { error } = await createSupabaseClient()
+        .from('categories')
+        .update({ name: name.trim() })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.categories });
+    },
+  });
+};
+
+export const useDeleteCategory = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (categoryId: string) => {
+      const { error } = await createSupabaseClient()
+        .from('categories')
+        .delete()
+        .eq('id', categoryId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.categories });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.topics });
+    },
+  });
 };
 
 // Topics 관련 훅들
@@ -89,6 +158,30 @@ export const useUpdateTopic = () => {
         .update({ name: name.trim(), category })
         .eq('id', id);
       if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.topics });
+    },
+  });
+};
+
+export const useUpdateTopicsCategory = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      topicIds,
+      category,
+    }: {
+      topicIds: string[];
+      category: string;
+    }) => {
+      const { error } = await createSupabaseClient()
+        .from('topics')
+        .update({ category })
+        .in('id', topicIds);
+      if (error) throw error;
+      return topicIds.length;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.topics });
