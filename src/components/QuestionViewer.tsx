@@ -116,17 +116,12 @@ const QuestionViewer: React.FC = () => {
   const exportQuestionsToCSV = () => {
     try {
       const rows = displayQuestions.map(q => ({
-        id: q.id,
-        category: q.topic?.category ?? '',
         topic: q.topic?.name ?? '',
         content: (q.content ?? '').replace(/\r?\n/g, ' '),
         english: q.english ?? '',
-        created_at: q.created_at
-          ? new Date(q.created_at).toLocaleString('ko-KR')
-          : '',
       }));
 
-      const header = ['ID', '카테고리', '주제', '질문', '영어 번역', '등록일'];
+      const header = ['Topic', 'Content', 'English'];
       const csvEscape = (value: unknown) => {
         const s = value == null ? '' : String(value);
         return `"${s.replace(/"/g, '""')}"`;
@@ -135,21 +130,21 @@ const QuestionViewer: React.FC = () => {
       const csvLines = [
         header.join(','),
         ...rows.map(r =>
-          [r.id, r.category, r.topic, r.content, r.english, r.created_at]
-            .map(csvEscape)
-            .join(',')
+          [r.topic, r.content, r.english].map(csvEscape).join(',')
         ),
       ];
 
-      const csv = csvLines.join('\n');
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      // UTF-8 BOM을 추가하여 한글 깨짐 방지
+      const csv = '\uFEFF' + csvLines.join('\n');
+      const blob = new Blob([new TextEncoder().encode(csv)], {
+        type: 'text/csv;charset=utf-8;',
+      });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      const filename = `questions_${new Date()
+      a.download = `questions_${new Date()
         .toISOString()
         .replace(/[:.]/g, '-')}.csv`;
-      a.download = filename;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -164,14 +159,9 @@ const QuestionViewer: React.FC = () => {
   const exportQuestionsToXLSX = () => {
     try {
       const rows = displayQuestions.map(q => ({
-        ID: q.id,
-        카테고리: q.topic?.category ?? '',
-        주제: q.topic?.name ?? '',
-        질문: q.content ?? '',
-        영어_번역: q.english ?? '',
-        등록일: q.created_at
-          ? new Date(q.created_at).toLocaleString('ko-KR')
-          : '',
+        Topic: q.topic?.name ?? '',
+        Content: (q.content ?? '').replace(/\r?\n/g, ' '),
+        English: q.english ?? '',
       }));
 
       const ws = XLSX.utils.json_to_sheet(rows);
