@@ -10,6 +10,7 @@ import {
   useRemoveUnknownWord,
   useUnknownWords,
 } from '../hooks/useUnknownWords';
+import * as XLSX from 'xlsx';
 
 // 검색어 하이라이트 컴포넌트
 const HighlightedText: React.FC<{ text: string; searchTerm: string }> = ({
@@ -110,6 +111,81 @@ const QuestionViewer: React.FC = () => {
   }
 
   const isLoading = isSearchMode ? searchLoading : questionsLoading;
+
+  // CSV(엑셀) 다운로드
+  const exportQuestionsToCSV = () => {
+    try {
+      const rows = displayQuestions.map(q => ({
+        id: q.id,
+        category: q.topic?.category ?? '',
+        topic: q.topic?.name ?? '',
+        content: (q.content ?? '').replace(/\r?\n/g, ' '),
+        english: q.english ?? '',
+        created_at: q.created_at
+          ? new Date(q.created_at).toLocaleString('ko-KR')
+          : '',
+      }));
+
+      const header = ['ID', '카테고리', '주제', '질문', '영어 번역', '등록일'];
+      const csvEscape = (value: unknown) => {
+        const s = value == null ? '' : String(value);
+        return `"${s.replace(/"/g, '""')}"`;
+      };
+
+      const csvLines = [
+        header.join(','),
+        ...rows.map(r =>
+          [r.id, r.category, r.topic, r.content, r.english, r.created_at]
+            .map(csvEscape)
+            .join(',')
+        ),
+      ];
+
+      const csv = csvLines.join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const filename = `questions_${new Date()
+        .toISOString()
+        .replace(/[:.]/g, '-')}.csv`;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('CSV export failed', error);
+      alert('엑셀(CSV) 내보내기에 실패했습니다. 콘솔을 확인하세요.');
+    }
+  };
+
+  // XLSX(Excel) 다운로드
+  const exportQuestionsToXLSX = () => {
+    try {
+      const rows = displayQuestions.map(q => ({
+        ID: q.id,
+        카테고리: q.topic?.category ?? '',
+        주제: q.topic?.name ?? '',
+        질문: q.content ?? '',
+        영어_번역: q.english ?? '',
+        등록일: q.created_at
+          ? new Date(q.created_at).toLocaleString('ko-KR')
+          : '',
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Questions');
+      const filename = `questions_${new Date()
+        .toISOString()
+        .replace(/[:.]/g, '-')}.xlsx`;
+      XLSX.writeFile(wb, filename);
+    } catch (error) {
+      console.error('XLSX export failed', error);
+      alert('엑셀(.xlsx) 내보내기에 실패했습니다. 콘솔을 확인하세요.');
+    }
+  };
   // 로딩 상태
   if (topicsLoading) {
     return (
@@ -229,6 +305,66 @@ const QuestionViewer: React.FC = () => {
           )}
         </div>
       </Card>
+
+      {/* 통계 정보 */}
+      {displayQuestions.length > 0 && (
+        <Card variant="primary" padding="md">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-[#228BE6]">
+                  {displayQuestions.length}
+                </div>
+                <div className="text-xs text-gray-600">전체 질문</div>
+              </div>
+              {filterCategory && (
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-600">
+                    {filterCategory}
+                  </div>
+                  <div className="text-xs text-gray-600">선택된 카테고리</div>
+                </div>
+              )}
+              {filterTopicId && (
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-[#228BE6]">
+                    {topics.find(t => t.id === filterTopicId)?.name}
+                  </div>
+                  <div className="text-xs text-gray-600">선택된 주제</div>
+                </div>
+              )}
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setFilterCategory('');
+                setFilterTopicId('');
+                setSearchTerm('');
+              }}
+              icon="🔄"
+            >
+              필터 초기화
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={exportQuestionsToCSV}
+              icon="⬇️"
+            >
+              CSV 다운로드
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={exportQuestionsToXLSX}
+              icon="⬇️"
+            >
+              XLSX 다운로드
+            </Button>
+          </div>
+        </Card>
+      )}
       {/* 질문 목록 */}
       <div>
         <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
@@ -345,49 +481,6 @@ const QuestionViewer: React.FC = () => {
         )}
       </div>
 
-      {/* 통계 정보 */}
-      {displayQuestions.length > 0 && (
-        <Card variant="primary" padding="md">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-[#228BE6]">
-                  {displayQuestions.length}
-                </div>
-                <div className="text-xs text-gray-600">전체 질문</div>
-              </div>
-              {filterCategory && (
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600">
-                    {filterCategory}
-                  </div>
-                  <div className="text-xs text-gray-600">선택된 카테고리</div>
-                </div>
-              )}
-              {filterTopicId && (
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-[#228BE6]">
-                    {topics.find(t => t.id === filterTopicId)?.name}
-                  </div>
-                  <div className="text-xs text-gray-600">선택된 주제</div>
-                </div>
-              )}
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setFilterCategory('');
-                setFilterTopicId('');
-                setSearchTerm('');
-              }}
-              icon="🔄"
-            >
-              필터 초기화
-            </Button>
-          </div>
-        </Card>
-      )}
       {/* 도움말 */}
       <Card variant="warning" padding="md">
         <h4 className="text-sm font-semibold text-yellow-800 mb-2 flex items-center gap-2">
