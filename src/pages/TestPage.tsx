@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import type { QuestionWithTopic } from '../types/question';
 import { useTopics, useTestQuestions } from '../hooks/useQuestions';
 import {
@@ -9,10 +9,10 @@ import {
 } from '../utils/learningStats';
 
 import TestResults from '../components/TestResults';
-import TestControl from '../components/TestControl.tsx';
-import TestProgress from '../components/TestProgress.tsx';
-import QuestionCard from '../components/QuestionCard.tsx';
-import UnknownQuestionsList from '../components/UnknownQuestionsList.tsx';
+import TestControl from '../components/TestControl';
+import TestProgress from '../components/TestProgress';
+import QuestionCard from '../components/QuestionCard';
+import UnknownQuestionsList from '../components/UnknownQuestionsList';
 
 const TestPage: React.FC = () => {
   // 테스트 관련 상태
@@ -108,7 +108,7 @@ const TestPage: React.FC = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [isTestMode, isRunning, currentQuestion, nextQuestion]); // 의존성 배열에 nextQuestion 추가
+  }, [isTestMode, isRunning, currentQuestion]); // nextQuestion은 아래에서 선언되므로 제거
 
   const getRandomQuestion = (questionsPool?: QuestionWithTopic[]) => {
     // questionsPool이 제공되면 사용하고, 아니면 현재 availableQuestions 사용

@@ -1,4 +1,3 @@
-import React from 'react';
 import TopicManager from '../components/TopicManager';
 
 const TopicManagementPage: React.FC = () => {
