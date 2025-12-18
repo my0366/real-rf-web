@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import Button from './ui/Button';
-import Input from './ui/Input';
-import Card from './ui/Card';
+import { Button, Input, Card } from './ui';
 
 export const LoginForm: React.FC = () => {
   const { signIn, signUp, signInWithKakao, loading, error } = useAuth();
@@ -66,7 +64,10 @@ export const LoginForm: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700"
+            >
               이메일
             </label>
             <Input
@@ -82,7 +83,10 @@ export const LoginForm: React.FC = () => {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700"
+            >
               비밀번호
             </label>
             <Input
@@ -99,7 +103,10 @@ export const LoginForm: React.FC = () => {
 
           {isSignUp && (
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-700"
+              >
                 비밀번호 확인
               </label>
               <Input
@@ -116,17 +123,11 @@ export const LoginForm: React.FC = () => {
           )}
 
           {error && (
-            <div className="text-red-600 text-sm text-center">
-              {error}
-            </div>
+            <div className="text-red-600 text-sm text-center">{error}</div>
           )}
 
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full"
-          >
-            {loading ? '처리 중...' : (isSignUp ? '회원가입' : '로그인')}
+          <Button type="submit" disabled={loading} className="w-full">
+            {loading ? '처리 중...' : isSignUp ? '회원가입' : '로그인'}
           </Button>
         </form>
 
@@ -153,16 +154,16 @@ export const LoginForm: React.FC = () => {
         </Button>
 
         <div className="mt-4 text-center">
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setIsSignUp(!isSignUp)}
-            className="text-blue-600 hover:text-blue-500 text-sm"
+            className="text-blue-600 hover:text-blue-500"
           >
             {isSignUp
               ? '이미 계정이 있으신가요? 로그인'
-              : '계정이 없으신가요? 회원가입'
-            }
-          </button>
+              : '계정이 없으신가요? 회원가입'}
+          </Button>
         </div>
       </Card>
     </div>

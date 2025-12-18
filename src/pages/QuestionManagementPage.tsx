@@ -3,11 +3,10 @@ import QuestionForm from '../components/QuestionForm';
 
 const QuestionManagementPage: React.FC = () => {
   return (
-    <div className="p-4 md:p-8">
+    <div className="page-container">
       <QuestionForm />
     </div>
   );
 };
 
 export default QuestionManagementPage;
-

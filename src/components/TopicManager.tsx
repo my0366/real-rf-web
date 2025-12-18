@@ -214,11 +214,8 @@ const TopicManager: React.FC = () => {
   // 로딩 상태
   if (isLoading || categoriesLoading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-center">
-          <div className="text-2xl mb-2">⏳</div>
-          <p className="text-gray-600">데이터를 불러오는 중...</p>
-        </div>
+      <div className="state-loading">
+        <p className="state-loading-text">데이터를 불러오는 중...</p>
       </div>
     );
   }
@@ -227,9 +224,8 @@ const TopicManager: React.FC = () => {
   if (error) {
     return (
       <div className="p-4">
-        <Card variant="danger" padding="md">
+        <Card variant="destructive" className="p-4">
           <div className="flex items-center gap-2">
-            <span className="text-lg">❌</span>
             <span className="font-medium">
               데이터를 불러오는 중 오류가 발생했습니다.
             </span>
@@ -240,59 +236,54 @@ const TopicManager: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div>
       {/* 헤더와 버튼들 */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-          주제 관리
-        </h2>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant={showCategoryManager ? 'secondary' : 'primary'}
-            icon={showCategoryManager ? '📚' : '🏷️'}
-            onClick={() => {
-              setShowCategoryManager(!showCategoryManager);
-              setShowBulkAdd(false);
-              setShowBulkCategoryChange(false);
-            }}
-          >
-            {showCategoryManager ? '주제 관리' : '카테고리 관리'}
-          </Button>
-          {!showCategoryManager && (
-            <>
-              <Button
-                variant={showBulkAdd ? 'secondary' : 'primary'}
-                icon={showBulkAdd ? '📝' : '📋'}
-                onClick={() => {
-                  setShowBulkAdd(!showBulkAdd);
-                  setShowBulkCategoryChange(false);
-                }}
-              >
-                {showBulkAdd ? '개별 추가' : '일괄 추가'}
-              </Button>
-              <Button
-                variant={showBulkCategoryChange ? 'secondary' : 'success'}
-                icon="🔄"
-                onClick={() => {
-                  setShowBulkCategoryChange(!showBulkCategoryChange);
-                  setShowBulkAdd(false);
-                  if (!showBulkCategoryChange) {
-                    setSelectedTopicIds([]);
-                  }
-                }}
-              >
-                {showBulkCategoryChange ? '취소' : '일괄 카테고리 변경'}
-              </Button>
-            </>
-          )}
-        </div>
+      <div className="page-header">
+        <h1 className="page-title">주제 관리</h1>
+        <p className="page-subtitle">학습 주제를 추가하고 관리하세요</p>
+      </div>
+      <div className="button-group">
+        <Button
+          variant={showCategoryManager ? 'secondary' : 'default'}
+          onClick={() => {
+            setShowCategoryManager(!showCategoryManager);
+            setShowBulkAdd(false);
+            setShowBulkCategoryChange(false);
+          }}
+        >
+          {showCategoryManager ? '주제 관리' : '카테고리 관리'}
+        </Button>
+        {!showCategoryManager && (
+          <>
+            <Button
+              variant={showBulkAdd ? 'secondary' : 'default'}
+              onClick={() => {
+                setShowBulkAdd(!showBulkAdd);
+                setShowBulkCategoryChange(false);
+              }}
+            >
+              {showBulkAdd ? '개별 추가' : '일괄 추가'}
+            </Button>
+            <Button
+              variant={showBulkCategoryChange ? 'secondary' : 'default'}
+              onClick={() => {
+                setShowBulkCategoryChange(!showBulkCategoryChange);
+                setShowBulkAdd(false);
+                if (!showBulkCategoryChange) {
+                  setSelectedTopicIds([]);
+                }
+              }}
+            >
+              {showBulkCategoryChange ? '취소' : '일괄 카테고리 변경'}
+            </Button>
+          </>
+        )}
       </div>
 
       {/* 성공 메시지들 */}
       {createTopic.isSuccess && (
-        <Card variant="success" padding="md">
+        <Card className="p-4">
           <div className="flex items-center gap-2">
-            <span className="text-lg">✅</span>
             <span className="font-medium">
               주제가 성공적으로 추가되었습니다!
             </span>
@@ -301,9 +292,8 @@ const TopicManager: React.FC = () => {
       )}
 
       {createTopicsBulk.isSuccess && (
-        <Card variant="success" padding="md">
+        <Card className="p-4">
           <div className="flex items-center gap-2">
-            <span className="text-lg">✅</span>
             <span className="font-medium">
               {createTopicsBulk.data}개의 주제가 성공적으로 추가되었습니다!
             </span>
@@ -312,9 +302,8 @@ const TopicManager: React.FC = () => {
       )}
 
       {updateTopic.isSuccess && (
-        <Card variant="success" padding="md">
+        <Card className="p-4">
           <div className="flex items-center gap-2">
-            <span className="text-lg">✅</span>
             <span className="font-medium">
               주제가 성공적으로 수정되었습니다!
             </span>
@@ -323,9 +312,8 @@ const TopicManager: React.FC = () => {
       )}
 
       {updateTopicsCategory.isSuccess && (
-        <Card variant="success" padding="md">
+        <Card className="p-4">
           <div className="flex items-center gap-2">
-            <span className="text-lg">✅</span>
             <span className="font-medium">
               {updateTopicsCategory.data}개의 주제 카테고리가 성공적으로
               변경되었습니다!
@@ -335,9 +323,8 @@ const TopicManager: React.FC = () => {
       )}
 
       {deleteTopic.isSuccess && (
-        <Card variant="success" padding="md">
+        <Card className="p-4">
           <div className="flex items-center gap-2">
-            <span className="text-lg">✅</span>
             <span className="font-medium">
               주제가 성공적으로 삭제되었습니다!
             </span>
@@ -346,9 +333,8 @@ const TopicManager: React.FC = () => {
       )}
 
       {createCategory.isSuccess && (
-        <Card variant="success" padding="md">
+        <Card className="p-4">
           <div className="flex items-center gap-2">
-            <span className="text-lg">✅</span>
             <span className="font-medium">
               카테고리가 성공적으로 추가되었습니다!
             </span>
@@ -357,9 +343,8 @@ const TopicManager: React.FC = () => {
       )}
 
       {updateCategory.isSuccess && (
-        <Card variant="success" padding="md">
+        <Card className="p-4">
           <div className="flex items-center gap-2">
-            <span className="text-lg">✅</span>
             <span className="font-medium">
               카테고리가 성공적으로 수정되었습니다!
             </span>
@@ -368,9 +353,8 @@ const TopicManager: React.FC = () => {
       )}
 
       {deleteCategory.isSuccess && (
-        <Card variant="success" padding="md">
+        <Card className="p-4">
           <div className="flex items-center gap-2">
-            <span className="text-lg">✅</span>
             <span className="font-medium">
               카테고리가 성공적으로 삭제되었습니다!
             </span>
@@ -382,9 +366,9 @@ const TopicManager: React.FC = () => {
       {showCategoryManager && (
         <>
           {/* 새 카테고리 추가 */}
-          <Card variant="primary" padding="lg">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              ➕ 카테고리 추가
+          <Card className="card-standard">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              카테고리 추가
             </h3>
             <div className="flex flex-col sm:flex-row gap-3">
               <Input
@@ -392,13 +376,13 @@ const TopicManager: React.FC = () => {
                 onChange={e => setNewCategoryName(e.target.value)}
                 placeholder="카테고리 이름을 입력하세요"
                 className="flex-1"
-                onKeyPress={e => e.key === 'Enter' && addCategory()}
+                onKeyDown={e => e.key === 'Enter' && addCategory()}
               />
               <Button
                 onClick={addCategory}
                 disabled={!newCategoryName.trim()}
                 loading={createCategory.isPending}
-                icon="➕"
+                size="sm"
               >
                 추가
               </Button>
@@ -407,35 +391,29 @@ const TopicManager: React.FC = () => {
 
           {/* 카테고리 목록 */}
           <Card>
-            <div className="bg-gray-50 px-4 md:px-6 py-4 border-b border-gray-200 -m-4 md:-m-6 mb-4 md:mb-6">
-              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                🏷️ 카테고리 목록 ({categories.length}개)
+            <div className="card-header">
+              <h3 className="card-header-title">
+                카테고리 목록 ({categories.length}개)
               </h3>
             </div>
 
             {categories.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">🏷️</div>
-                <p className="text-gray-500 text-base mb-2">
-                  등록된 카테고리가 없습니다
-                </p>
-                <p className="text-gray-400 text-sm">
+              <div className="state-empty">
+                <p className="state-empty-title">등록된 카테고리가 없습니다</p>
+                <p className="state-empty-subtitle">
                   첫 번째 카테고리를 추가하여 시작하세요!
                 </p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-100 max-h-96 overflow-y-auto">
+              <div className="card-list max-h-96 overflow-y-auto">
                 {categories.map((category, index) => (
-                  <div
-                    key={category.id}
-                    className="p-4 md:p-6 hover:bg-gray-50 transition-colors"
-                  >
+                  <div key={category.id} className="card-list-item">
                     {editingCategory?.id === category.id ? (
                       <div className="space-y-3">
                         <Input
                           value={editCategoryName}
                           onChange={e => setEditCategoryName(e.target.value)}
-                          onKeyPress={e =>
+                          onKeyDown={e =>
                             e.key === 'Enter' && handleUpdateCategory()
                           }
                           autoFocus
@@ -443,10 +421,9 @@ const TopicManager: React.FC = () => {
                         />
                         <div className="flex flex-col sm:flex-row gap-2">
                           <Button
-                            variant="success"
+                            variant="default"
                             onClick={handleUpdateCategory}
                             loading={updateCategory.isPending}
-                            icon="💾"
                             size="sm"
                             className="flex-1"
                           >
@@ -456,7 +433,6 @@ const TopicManager: React.FC = () => {
                             variant="secondary"
                             onClick={cancelEditCategory}
                             size="sm"
-                            icon="✕"
                             className="flex-1"
                           >
                             취소
@@ -475,14 +451,14 @@ const TopicManager: React.FC = () => {
                         </div>
                         <div className="flex gap-2 flex-shrink-0">
                           <Button
-                            variant="primary"
+                            variant="default"
                             size="sm"
                             onClick={() => startEditCategory(category)}
                           >
                             수정
                           </Button>
                           <Button
-                            variant="danger"
+                            variant="destructive"
                             size="sm"
                             onClick={() => handleDeleteCategory(category.id)}
                             loading={deleteCategory.isPending}
@@ -505,9 +481,9 @@ const TopicManager: React.FC = () => {
         <>
           {/* 일괄 카테고리 변경 안내 */}
           {showBulkCategoryChange && selectedTopicIds.length > 0 && (
-            <Card variant="primary" padding="lg">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                🔄 선택된 주제 ({selectedTopicIds.length}개) 카테고리 변경
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                선택된 주제 ({selectedTopicIds.length}개) 카테고리 변경
               </h3>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Select
@@ -523,13 +499,13 @@ const TopicManager: React.FC = () => {
                   ))}
                 </Select>
                 <Button
-                  variant="success"
+                  variant="default"
                   onClick={handleBulkCategoryChange}
                   disabled={
                     !bulkChangeCategory || selectedTopicIds.length === 0
                   }
                   loading={updateTopicsCategory.isPending}
-                  icon="🔄"
+                  size="sm"
                 >
                   변경
                 </Button>
@@ -539,22 +515,22 @@ const TopicManager: React.FC = () => {
 
           {/* 새 주제 추가 */}
           {!showBulkAdd && !showBulkCategoryChange && (
-            <Card variant="primary" padding="lg">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                ➕ 주제 추가
+            <Card className="card-standard">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                주제 추가
               </h3>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Input
                   value={newTopicName}
                   onChange={e => setNewTopicName(e.target.value)}
                   placeholder="주제 이름을 입력하세요"
-                  className="flex-1"
-                  onKeyPress={e => e.key === 'Enter' && addTopic()}
+                  className="flex"
+                  onKeyDown={e => e.key === 'Enter' && addTopic()}
                 />
                 <Select
                   value={newTopicCategory}
                   onChange={e => setNewTopicCategory(e.target.value)}
-                  className="min-w-[120px]"
+                  className="min-w-[120px] max-w-[200px]"
                 >
                   <option value="">카테고리 선택</option>
                   {categories.map(cat => (
@@ -567,7 +543,6 @@ const TopicManager: React.FC = () => {
                   onClick={addTopic}
                   disabled={!newTopicName.trim() || !newTopicCategory}
                   loading={createTopic.isPending}
-                  icon="➕"
                 >
                   추가
                 </Button>
@@ -577,9 +552,9 @@ const TopicManager: React.FC = () => {
 
           {/* 일괄 주제 추가 */}
           {showBulkAdd && (
-            <Card variant="success" padding="lg">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                📋 일괄 주제 추가
+            <Card className="card-standard">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                일괄 주제 추가
               </h3>
               <div className="space-y-4">
                 <Textarea
@@ -603,11 +578,11 @@ const TopicManager: React.FC = () => {
                 </Select>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button
-                    variant="success"
+                    variant="default"
                     onClick={bulkAddTopics}
                     disabled={!bulkText.trim() || !bulkCategory}
                     loading={createTopicsBulk.isPending}
-                    icon="📋"
+                    size="sm"
                     className="flex-1"
                   >
                     일괄 등록
@@ -625,10 +600,10 @@ const TopicManager: React.FC = () => {
 
           {/* 주제 목록 */}
           <Card>
-            <div className="bg-gray-50 px-4 md:px-6 py-4 border-b border-gray-200 -m-4 md:-m-6 mb-4 md:mb-6">
+            <div className="card-header">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                  📚 주제 목록 ({topics.length}개)
+                <h3 className="card-header-title">
+                  주제 목록 ({topics.length}개)
                 </h3>
                 {showBulkCategoryChange && topics.length > 0 && (
                   <Button
@@ -645,28 +620,22 @@ const TopicManager: React.FC = () => {
             </div>
 
             {topics.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">📚</div>
-                <p className="text-gray-500 text-base mb-2">
-                  등록된 주제가 없습니다
-                </p>
-                <p className="text-gray-400 text-sm">
+              <div className="state-empty">
+                <p className="state-empty-title">등록된 주제가 없습니다</p>
+                <p className="state-empty-subtitle">
                   첫 번째 주제를 추가하여 시작하세요!
                 </p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-100 max-h-96 overflow-y-auto">
+              <div className="card-list max-h-96 overflow-y-auto">
                 {topics.map((topic, index) => (
-                  <div
-                    key={topic.id}
-                    className="p-4 md:p-6 hover:bg-gray-50 transition-colors"
-                  >
+                  <div key={topic.id} className="card-list-item">
                     {editingTopic?.id === topic.id ? (
                       <div className="space-y-3">
                         <Input
                           value={editName}
                           onChange={e => setEditName(e.target.value)}
-                          onKeyPress={e =>
+                          onKeyDown={e =>
                             e.key === 'Enter' && handleUpdateTopic()
                           }
                           autoFocus
@@ -686,10 +655,9 @@ const TopicManager: React.FC = () => {
                         </Select>
                         <div className="flex flex-col sm:flex-row gap-2">
                           <Button
-                            variant="success"
+                            variant="default"
                             onClick={handleUpdateTopic}
                             loading={updateTopic.isPending}
-                            icon="💾"
                             size="sm"
                             className="flex-1"
                           >
@@ -699,7 +667,6 @@ const TopicManager: React.FC = () => {
                             variant="secondary"
                             onClick={cancelEdit}
                             size="sm"
-                            icon="✕"
                             className="flex-1"
                           >
                             취소
@@ -730,14 +697,14 @@ const TopicManager: React.FC = () => {
                         {!showBulkCategoryChange && (
                           <div className="flex gap-2 flex-shrink-0">
                             <Button
-                              variant="primary"
+                              variant="default"
                               size="sm"
                               onClick={() => startEdit(topic)}
                             >
                               수정
                             </Button>
                             <Button
-                              variant="danger"
+                              variant="destructive"
                               size="sm"
                               onClick={() => handleDeleteTopic(topic.id)}
                               loading={deleteTopic.isPending}
@@ -757,10 +724,8 @@ const TopicManager: React.FC = () => {
       )}
 
       {/* 도움말 */}
-      <Card variant="warning" padding="md">
-        <h4 className="text-sm font-semibold text-yellow-800 mb-2 flex items-center gap-2">
-          💡 도움말
-        </h4>
+      <Card variant="warning" className="p-4">
+        <h4 className="text-sm font-semibold text-yellow-800 mb-2">도움말</h4>
         <ul className="text-sm text-yellow-700 space-y-1">
           {showCategoryManager ? (
             <>

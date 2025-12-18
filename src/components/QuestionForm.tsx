@@ -168,11 +168,8 @@ const QuestionForm: React.FC = () => {
   // 로딩 상태
   if (topicsLoading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-center">
-          <div className="text-2xl mb-2">⏳</div>
-          <p className="text-gray-600">주제를 불러오는 중...</p>
-        </div>
+      <div className="state-loading">
+        <p className="state-loading-text">주제를 불러오는 중...</p>
       </div>
     );
   }
@@ -181,14 +178,11 @@ const QuestionForm: React.FC = () => {
     <div className="space-y-4 md:space-y-6">
       {/* 헤더와 모드 토글 */}
       <div className="flex flex-col gap-3">
-        <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-          질문 관리
-        </h2>
+        <h2 className="page-title">질문 관리</h2>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="button-group">
           <Button
-            variant={!showBulkAdd && !showExcelUpload ? 'primary' : 'secondary'}
-            icon="📝"
+            variant={!showBulkAdd && !showExcelUpload ? 'default' : 'secondary'}
             size="sm"
             onClick={() => {
               setShowBulkAdd(false);
@@ -199,8 +193,7 @@ const QuestionForm: React.FC = () => {
           </Button>
 
           <Button
-            variant={showBulkAdd ? 'primary' : 'secondary'}
-            icon="📋"
+            variant={showBulkAdd ? 'default' : 'secondary'}
             size="sm"
             onClick={() => {
               setShowBulkAdd(true);
@@ -211,8 +204,7 @@ const QuestionForm: React.FC = () => {
           </Button>
 
           <Button
-            variant={showExcelUpload ? 'primary' : 'secondary'}
-            icon="📂"
+            variant={showExcelUpload ? 'default' : 'secondary'}
             size="sm"
             onClick={() => {
               setShowExcelUpload(true);
@@ -226,9 +218,8 @@ const QuestionForm: React.FC = () => {
 
       {/* 성공/에러 메시지 */}
       {createQuestion.isSuccess && (
-        <Card variant="success" padding="md">
+        <Card className="p-4">
           <div className="flex items-center gap-2">
-            <span className="text-lg">✅</span>
             <span className="font-medium">
               질문이 성공적으로 등록되었습니다!
             </span>
@@ -237,9 +228,8 @@ const QuestionForm: React.FC = () => {
       )}
 
       {createQuestionsBulk.isSuccess && (
-        <Card variant="success" padding="md">
+        <Card className="p-4">
           <div className="flex items-center gap-2">
-            <span className="text-lg">✅</span>
             <span className="font-medium">
               {createQuestionsBulk.data}개의 질문이 성공적으로 등록되었습니다!
             </span>
@@ -249,14 +239,13 @@ const QuestionForm: React.FC = () => {
 
       {/* 개별 질문 등록 */}
       {!showBulkAdd && !showExcelUpload && (
-        <Card variant="primary" padding="lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            📝 개별 질문 등록
+        <Card className="card-standard">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            개별 질문 등록
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <Select
               label="주제 선택"
-              icon="📚"
               value={selectedTopicId}
               onChange={e => setSelectedTopicId(e.target.value)}
               required
@@ -271,7 +260,6 @@ const QuestionForm: React.FC = () => {
 
             <Textarea
               label="질문 내용"
-              icon="💬"
               value={content}
               onChange={e => setContent(e.target.value)}
               placeholder="질문 내용을 입력하세요"
@@ -281,7 +269,6 @@ const QuestionForm: React.FC = () => {
 
             <Input
               label="영어 (선택사항)"
-              icon="🌍"
               value={english}
               onChange={e => setEnglish(e.target.value)}
               placeholder="영어 번역을 입력하세요"
@@ -291,7 +278,6 @@ const QuestionForm: React.FC = () => {
               type="submit"
               disabled={!selectedTopicId || !content.trim()}
               loading={createQuestion.isPending}
-              icon="✨"
               className="w-full"
             >
               질문 등록
@@ -302,14 +288,13 @@ const QuestionForm: React.FC = () => {
 
       {/* 일괄 질문 등록 */}
       {showBulkAdd && !showExcelUpload && (
-        <Card variant="success" padding="lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            📋 일괄 질문 등록
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            일괄 질문 등록
           </h3>
           <div className="space-y-4">
             <Select
               label="주제 선택"
-              icon="📚"
               value={selectedTopicId}
               onChange={e => setSelectedTopicId(e.target.value)}
             >
@@ -323,7 +308,6 @@ const QuestionForm: React.FC = () => {
 
             <Textarea
               label="질문 내용 (한 줄에 하나씩)"
-              icon="📝"
               value={content}
               onChange={e => setContent(e.target.value)}
               placeholder="질문 내용을 한 줄에 하나씩 입력하세요&#10;예시:&#10;1. 고마워 | Thank you&#10;2. 천만에요 | You're welcome&#10;3. 많은도움이됐어 | That was very helpful&#10;4. ~해줘서 고마워"
@@ -333,7 +317,7 @@ const QuestionForm: React.FC = () => {
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <p className="text-sm text-blue-700">
-                <strong>💡 일괄 등록 팁:</strong> 각 줄에서{' '}
+                <strong>일괄 등록 팁:</strong> 각 줄에서{' '}
                 <code className="bg-blue-100 px-1 rounded">|</code> 문자로
                 한국어와 영어를 구분할 수 있습니다.
                 <br />
@@ -343,11 +327,10 @@ const QuestionForm: React.FC = () => {
 
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
-                variant="success"
+                variant="default"
                 onClick={bulkAddQuestions}
                 disabled={!selectedTopicId || !content.trim()}
                 loading={createQuestionsBulk.isPending}
-                icon="📋"
                 className="flex-1"
               >
                 일괄 등록
@@ -362,7 +345,7 @@ const QuestionForm: React.FC = () => {
 
       {/* 엑셀 파일 업로드 */}
       {showExcelUpload && (
-        <Card variant="primary" padding="lg">
+        <Card className="p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
             📂 엑셀 파일 일괄 등록
           </h3>
@@ -384,7 +367,6 @@ const QuestionForm: React.FC = () => {
 
             <Select
               label="주제 선택"
-              icon="📚"
               value={selectedTopicId}
               onChange={e => setSelectedTopicId(e.target.value)}
             >
@@ -398,8 +380,7 @@ const QuestionForm: React.FC = () => {
 
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
-                variant="primary"
-                icon="⬆️"
+                variant="default"
                 onClick={() => document.getElementById('excel-upload')?.click()}
                 className="flex-1"
                 disabled={!selectedTopicId}
@@ -433,7 +414,7 @@ const QuestionForm: React.FC = () => {
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
                   <h4 className="text-md font-semibold text-gray-800">
-                    📊 엑셀 미리보기 ({excelPreview.length}개 항목)
+                    엑셀 미리보기 ({excelPreview.length}개 항목)
                   </h4>
                 </div>
                 <div className="p-4 max-h-96 overflow-y-auto">
@@ -488,7 +469,7 @@ const QuestionForm: React.FC = () => {
                       취소
                     </Button>
                     <Button
-                      variant="success"
+                      variant="default"
                       onClick={uploadExcelQuestions}
                       loading={createQuestionsBulk.isPending}
                       disabled={!selectedTopicId}
@@ -515,7 +496,7 @@ const QuestionForm: React.FC = () => {
       )}
 
       {/* 도움말 */}
-      <Card variant="warning" padding="md">
+      <Card variant="warning" className="p-4">
         <h4 className="text-sm font-semibold text-yellow-800 mb-2 flex items-center gap-2">
           💡 도움말
         </h4>

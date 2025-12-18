@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { createSupabaseClient } from '../supabaseClient';
 import type { UserStatus } from '../types/admin';
-import Card from '../components/ui/Card';
-import Button from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
 
 const supabase = createSupabaseClient(true); // Service role for admin operations
 
@@ -26,7 +26,11 @@ export default function UserApprovalPage() {
       if (error) throw error;
       setUsers(data || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '사용자 목록을 불러오는데 실패했습니다.');
+      setError(
+        err instanceof Error
+          ? err.message
+          : '사용자 목록을 불러오는데 실패했습니다.'
+      );
     } finally {
       setLoading(false);
     }
@@ -39,7 +43,7 @@ export default function UserApprovalPage() {
         .update({
           is_active: true,
           activated_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('user_id', userId);
 
@@ -49,7 +53,9 @@ export default function UserApprovalPage() {
       await fetchUsers();
       alert(`${userEmail} 사용자가 활성화되었습니다.`);
     } catch (err) {
-      alert(err instanceof Error ? err.message : '사용자 활성화에 실패했습니다.');
+      alert(
+        err instanceof Error ? err.message : '사용자 활성화에 실패했습니다.'
+      );
     }
   };
 
@@ -62,7 +68,7 @@ export default function UserApprovalPage() {
         .update({
           is_active: false,
           deactivated_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('user_id', userId);
 
@@ -72,7 +78,9 @@ export default function UserApprovalPage() {
       await fetchUsers();
       alert(`${userEmail} 사용자가 비활성화되었습니다.`);
     } catch (err) {
-      alert(err instanceof Error ? err.message : '사용자 비활성화에 실패했습니다.');
+      alert(
+        err instanceof Error ? err.message : '사용자 비활성화에 실패했습니다.'
+      );
     }
   };
 
@@ -82,7 +90,7 @@ export default function UserApprovalPage() {
         .from('user_status')
         .update({
           notes,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('user_id', userId);
 
@@ -91,7 +99,9 @@ export default function UserApprovalPage() {
       // 사용자 목록 새로고침
       await fetchUsers();
     } catch (err) {
-      alert(err instanceof Error ? err.message : '메모 업데이트에 실패했습니다.');
+      alert(
+        err instanceof Error ? err.message : '메모 업데이트에 실패했습니다.'
+      );
     }
   };
 
@@ -112,16 +122,18 @@ export default function UserApprovalPage() {
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">사용자 승인 관리</h1>
+    <div className="page-container">
+      <div className="page-header">
+        <h1 className="page-title">사용자 승인 관리</h1>
+      </div>
 
-      <div className="grid gap-6">
+      <div className="gap-card">
         {users.length === 0 ? (
           <Card className="p-6 text-center">
             <p className="text-gray-500">등록된 사용자가 없습니다.</p>
           </Card>
         ) : (
-          users.map((user) => (
+          users.map(user => (
             <UserStatusCard
               key={user.id}
               user={user}
@@ -143,7 +155,12 @@ interface UserStatusCardProps {
   onUpdateNotes: (userId: string, notes: string) => void;
 }
 
-function UserStatusCard({ user, onActivate, onDeactivate, onUpdateNotes }: UserStatusCardProps) {
+function UserStatusCard({
+  user,
+  onActivate,
+  onDeactivate,
+  onUpdateNotes,
+}: UserStatusCardProps) {
   const [notes, setNotes] = useState(user.notes || '');
   const [isEditingNotes, setIsEditingNotes] = useState(false);
 
@@ -168,38 +185,46 @@ function UserStatusCard({ user, onActivate, onDeactivate, onUpdateNotes }: UserS
             </div>
             <div>
               <span className="font-medium">상태:</span>
-              <span className={`ml-2 px-2 py-1 rounded text-xs font-medium ${
-                user.is_active 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-red-100 text-red-800'
-              }`}>
+              <span
+                className={`ml-2 px-2 py-1 rounded text-xs font-medium ${
+                  user.is_active
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-red-100 text-red-800'
+                }`}
+              >
                 {user.is_active ? '활성' : '비활성'}
               </span>
             </div>
             <div>
-              <span className="font-medium">생성일:</span> {formatDate(user.created_at)}
+              <span className="font-medium">생성일:</span>{' '}
+              {formatDate(user.created_at)}
             </div>
             <div>
-              <span className="font-medium">수정일:</span> {formatDate(user.updated_at)}
+              <span className="font-medium">수정일:</span>{' '}
+              {formatDate(user.updated_at)}
             </div>
             {user.activated_at && (
               <div>
-                <span className="font-medium">활성화일:</span> {formatDate(user.activated_at)}
+                <span className="font-medium">활성화일:</span>{' '}
+                {formatDate(user.activated_at)}
               </div>
             )}
             {user.activated_by && (
               <div>
-                <span className="font-medium">활성화자:</span> {user.activated_by}
+                <span className="font-medium">활성화자:</span>{' '}
+                {user.activated_by}
               </div>
             )}
             {user.deactivated_at && (
               <div>
-                <span className="font-medium">비활성화일:</span> {formatDate(user.deactivated_at)}
+                <span className="font-medium">비활성화일:</span>{' '}
+                {formatDate(user.deactivated_at)}
               </div>
             )}
             {user.deactivated_by && (
               <div>
-                <span className="font-medium">비활성화자:</span> {user.deactivated_by}
+                <span className="font-medium">비활성화자:</span>{' '}
+                {user.deactivated_by}
               </div>
             )}
           </div>
@@ -208,14 +233,14 @@ function UserStatusCard({ user, onActivate, onDeactivate, onUpdateNotes }: UserS
         <div className="flex gap-2 ml-4">
           {user.is_active ? (
             <Button
-              variant="danger"
+              variant="destructive"
               onClick={() => onDeactivate(user.user_id, user.email)}
             >
               비활성화
             </Button>
           ) : (
             <Button
-              variant="primary"
+              variant="default"
               onClick={() => onActivate(user.user_id, user.email)}
             >
               활성화
@@ -257,7 +282,7 @@ function UserStatusCard({ user, onActivate, onDeactivate, onUpdateNotes }: UserS
         {isEditingNotes ? (
           <textarea
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            onChange={e => setNotes(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded-md resize-none"
             rows={3}
             placeholder="사용자에 대한 메모를 입력하세요..."

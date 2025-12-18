@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Select, Input, Card } from './ui';
+import EditQuestionModal from './EditQuestionModal';
 import {
   useTopics,
   useQuestions,
@@ -10,6 +11,7 @@ import {
   useRemoveUnknownWord,
   useUnknownWords,
 } from '../hooks/useUnknownWords';
+import type { QuestionWithTopic } from '../types/question';
 import * as XLSX from 'xlsx';
 
 // 검색어 하이라이트 컴포넌트
@@ -45,21 +47,11 @@ const QuestionViewer: React.FC = () => {
   const [filterCategory, setFilterCategory] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [searchDebounce, setSearchDebounce] = useState('');
+  const [editingQuestion, setEditingQuestion] =
+    useState<QuestionWithTopic | null>(null);
 
   // React Query 훅들
   const { data: topics = [], isLoading: topicsLoading } = useTopics();
-  const {
-    data: questions = [],
-    isLoading: questionsLoading,
-    error: questionsError,
-  } = useQuestions(filterTopicId);
-  const { data: searchResults = [], isLoading: searchLoading } =
-    useSearchQuestions(searchDebounce, filterTopicId);
-
-  // 모르는 단어 관련 훅
-  const { data: unknownWords = [] } = useUnknownWords(false);
-  const addUnknownWord = useAddUnknownWord();
-  const removeUnknownWord = useRemoveUnknownWord();
 
   // 카테고리 목록 추출 (중복 제거)
   const categories = Array.from(new Set(topics.map(t => t.category))).sort();
@@ -68,6 +60,25 @@ const QuestionViewer: React.FC = () => {
   const filteredTopics = filterCategory
     ? topics.filter(t => t.category === filterCategory)
     : topics;
+
+  // 카테고리 필터가 있을 때 주제 ID들을 쿼리에 포함시킴
+  const topicIdsForQuery = filterCategory
+    ? filteredTopics.map(t => t.id).join(',')
+    : filterTopicId;
+
+  const {
+    data: questions = [],
+    isLoading: questionsLoading,
+    error: questionsError,
+  } = useQuestions(topicIdsForQuery);
+
+  const { data: searchResults = [], isLoading: searchLoading } =
+    useSearchQuestions(searchDebounce, topicIdsForQuery);
+
+  // 모르는 단어 관련 훅
+  const { data: unknownWords = [] } = useUnknownWords(false);
+  const addUnknownWord = useAddUnknownWord();
+  const removeUnknownWord = useRemoveUnknownWord();
 
   // 특정 질문이 모르는 단어인지 확인
   const isUnknownWord = (questionId: string) => {
@@ -99,16 +110,8 @@ const QuestionViewer: React.FC = () => {
   // 검색 모드 판단
   const isSearchMode = searchTerm.trim().length > 0;
 
-  // 표시할 질문 목록 결정 (카테고리 필터 적용)
-  let displayQuestions = isSearchMode ? searchResults : questions;
-
-  // 카테고리 필터가 있을 때 추가 필터링
-  if (filterCategory && !filterTopicId) {
-    const categoryTopicIds = filteredTopics.map(t => t.id);
-    displayQuestions = displayQuestions.filter(q =>
-      categoryTopicIds.includes(q.topic_id)
-    );
-  }
+  // 표시할 질문 목록 결정
+  const displayQuestions = isSearchMode ? searchResults : questions;
 
   const isLoading = isSearchMode ? searchLoading : questionsLoading;
 
@@ -181,7 +184,6 @@ const QuestionViewer: React.FC = () => {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
-          <div className="text-2xl mb-2">⏳</div>
           <p className="text-gray-600">주제를 불러오는 중...</p>
         </div>
       </div>
@@ -191,9 +193,8 @@ const QuestionViewer: React.FC = () => {
   if (questionsError) {
     return (
       <div className="p-4">
-        <Card variant="danger" padding="md">
+        <Card variant="destructive" className="p-4">
           <div className="flex items-center gap-2">
-            <span className="text-lg">❌</span>
             <span className="font-medium">
               질문을 불러오는 중 오류가 발생했습니다.
             </span>
@@ -205,14 +206,14 @@ const QuestionViewer: React.FC = () => {
   return (
     <div className="space-y-4 md:space-y-6">
       {/* 헤더 */}
-      <div className="flex flex-col gap-3">
-        <h2 className="text-xl md:text-2xl font-bold text-gray-800">질문</h2>
-        <p className="text-sm text-gray-600">
+      <div className="page-header">
+        <h2 className="page-title">질문</h2>
+        <p className="page-subtitle">
           등록된 질문들을 카드 형식으로 확인하세요
         </p>
       </div>
       {/* 필터와 검색 */}
-      <Card variant="primary" padding="md">
+      <Card className="card-standard">
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* 카테고리 선택 */}
@@ -270,9 +271,8 @@ const QuestionViewer: React.FC = () => {
                 onClick={() => {
                   setSearchTerm('');
                 }}
-                icon="✕"
               >
-                검색 취소
+                ✕ 검색 취소
               </Button>
             </div>
           )}
@@ -283,12 +283,12 @@ const QuestionViewer: React.FC = () => {
               <span className="text-gray-600">활성 필터:</span>
               {filterCategory && (
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                  📁 {filterCategory}
+                  {filterCategory}
                 </span>
               )}
               {filterTopicId && (
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  📚 {topics.find(t => t.id === filterTopicId)?.name}
+                  {topics.find(t => t.id === filterTopicId)?.name}
                 </span>
               )}
             </div>
@@ -298,7 +298,7 @@ const QuestionViewer: React.FC = () => {
 
       {/* 통계 정보 */}
       {displayQuestions.length > 0 && (
-        <Card variant="primary" padding="md">
+        <Card className="p-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="text-center">
@@ -332,25 +332,14 @@ const QuestionViewer: React.FC = () => {
                 setFilterTopicId('');
                 setSearchTerm('');
               }}
-              icon="🔄"
             >
-              필터 초기화
+              🔄 필터 초기화
             </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={exportQuestionsToCSV}
-              icon="⬇️"
-            >
-              CSV 다운로드
+            <Button variant="default" size="sm" onClick={exportQuestionsToCSV}>
+              ⬇️ CSV 다운로드
             </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={exportQuestionsToXLSX}
-              icon="⬇️"
-            >
-              XLSX 다운로드
+            <Button variant="default" size="sm" onClick={exportQuestionsToXLSX}>
+              ⬇️ XLSX 다운로드
             </Button>
           </div>
         </Card>
@@ -367,14 +356,12 @@ const QuestionViewer: React.FC = () => {
         {isLoading ? (
           <Card>
             <div className="text-center py-12">
-              <div className="text-2xl mb-2">⏳</div>
               <p className="text-gray-600">질문을 불러오는 중...</p>
             </div>
           </Card>
         ) : displayQuestions.length === 0 ? (
           <Card>
             <div className="text-center py-12">
-              <div className="text-6xl mb-4">{isSearchMode ? '🔍' : '🎴'}</div>
               <p className="text-gray-500 text-base mb-2">
                 {isSearchMode
                   ? `"${searchTerm}"에 대한 검색 결과가 없습니다.`
@@ -392,8 +379,7 @@ const QuestionViewer: React.FC = () => {
             {displayQuestions.map((question, index) => (
               <Card
                 key={question.id}
-                padding="lg"
-                className="hover:shadow-lg transition-shadow duration-200 border-l-4 border-l-[#228BE6]"
+                className="p-6 hover:shadow-lg transition-shadow duration-200 border-l-4 border-l-[#228BE6]"
               >
                 <div className="space-y-3">
                   {/* 카드 헤더 */}
@@ -452,17 +438,27 @@ const QuestionViewer: React.FC = () => {
 
                   {/* 모르는 단어 버튼 */}
                   <div className="pt-3 border-t border-gray-100">
-                    <Button
-                      variant={isUnknownWord(question.id) ? 'danger' : 'ghost'}
-                      size="sm"
-                      onClick={() => handleToggleUnknownWord(question.id)}
-                      icon={isUnknownWord(question.id) ? '✓' : '📌'}
-                      className="w-full"
-                    >
-                      {isUnknownWord(question.id)
-                        ? '모르는 단어에서 제거'
-                        : '모르는 단어 추가'}
-                    </Button>
+                    <div className="button-group justify-between">
+                      <Button
+                        variant={
+                          isUnknownWord(question.id) ? 'destructive' : 'ghost'
+                        }
+                        size="sm"
+                        onClick={() => handleToggleUnknownWord(question.id)}
+                        className="flex-1"
+                      >
+                        {isUnknownWord(question.id)
+                          ? '📌 모르는 단어에서 제거'
+                          : '📌 모르는 단어 추가'}
+                      </Button>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => setEditingQuestion(question)}
+                      >
+                        ✏️ 수정
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </Card>
@@ -472,7 +468,7 @@ const QuestionViewer: React.FC = () => {
       </div>
 
       {/* 도움말 */}
-      <Card variant="warning" padding="md">
+      <Card variant="warning" className="p-4">
         <h4 className="text-sm font-semibold text-yellow-800 mb-2 flex items-center gap-2">
           💡 도움말
         </h4>
@@ -485,6 +481,15 @@ const QuestionViewer: React.FC = () => {
           <li>• 질문 추가/편집은 "질문 관리" 페이지에서 가능합니다</li>
         </ul>
       </Card>
+
+      {/* 수정 모달 */}
+      {editingQuestion && (
+        <EditQuestionModal
+          question={editingQuestion}
+          isOpen={!!editingQuestion}
+          onClose={() => setEditingQuestion(null)}
+        />
+      )}
     </div>
   );
 };

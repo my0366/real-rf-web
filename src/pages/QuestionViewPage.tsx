@@ -3,7 +3,7 @@ import QuestionViewer from '../components/QuestionViewer';
 
 const QuestionViewPage: React.FC = () => {
   return (
-    <div className="p-4 md:p-8">
+    <div className="page-container">
       <QuestionViewer />
     </div>
   );

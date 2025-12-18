@@ -86,78 +86,135 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           {/* 사이드바 헤더 */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900">메뉴</h2>
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               className="md:hidden text-gray-500 hover:text-gray-700"
               onClick={() => setSidebarOpen(false)}
             >
               ✕
-            </button>
+            </Button>
           </div>
 
           {/* 네비게이션 메뉴 */}
-          <nav className="flex-1 p-4">
-            <ul className="space-y-2">
-              {/* 일반 메뉴 */}
-              {menuItems.map(item => (
-                <li key={item.path}>
-                  <button
-                    onClick={() => handleNavigation(item.path)}
-                    className={`
-                                            w-full text-left px-4 py-3 rounded-lg transition-colors duration-200
-                                            ${
-                                              location.pathname === item.path
-                                                ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                                                : 'text-gray-700 hover:bg-gray-100'
-                                            }
-                                        `}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <span className="text-lg">{item.icon}</span>
-                      <span className="font-medium">{item.label}</span>
-                    </div>
-                  </button>
-                </li>
-              ))}
+          <nav className="flex-1 p-4 overflow-y-auto">
+            {/* 학습 섹션 */}
+            {menuItems.some(item => item.category === 'learning') && (
+              <div className="mb-6">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 mb-3">
+                  학습하기
+                </p>
+                <ul className="space-y-2">
+                  {menuItems
+                    .filter(item => item.category === 'learning')
+                    .map(item => (
+                      <li key={item.path}>
+                        <Button
+                          variant="ghost"
+                          className={`
+                            w-full text-left px-4 py-3 rounded-lg transition-colors duration-200
+                            ${
+                              location.pathname === item.path
+                                ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                                : 'text-gray-700 hover:bg-gray-100'
+                            }
+                          `}
+                          onClick={() => handleNavigation(item.path)}
+                          title={item.description}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <span className="text-lg">{item.icon}</span>
+                            <div>
+                              <div className="font-medium">{item.label}</div>
+                              <div className="text-xs text-gray-500">
+                                {item.description}
+                              </div>
+                            </div>
+                          </div>
+                        </Button>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            )}
 
-              {/* 관리자 메뉴 구분선 */}
-              {isAdmin && adminMenuItems.length > 0 && (
-                <li className="pt-4">
-                  <div className="border-t border-gray-200 pt-4">
-                    <div className="px-4 py-2">
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        관리자 메뉴
-                      </p>
-                    </div>
-                  </div>
-                </li>
-              )}
+            {/* 관리 섹션 */}
+            {menuItems.some(item => item.category === 'management') && (
+              <div className="mb-6">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 mb-3">
+                  컨텐츠 관리
+                </p>
+                <ul className="space-y-2">
+                  {menuItems
+                    .filter(item => item.category === 'management')
+                    .map(item => (
+                      <li key={item.path}>
+                        <Button
+                          variant="ghost"
+                          className={`
+                            w-full text-left px-4 py-3 rounded-lg transition-colors duration-200
+                            ${
+                              location.pathname === item.path
+                                ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                : 'text-gray-700 hover:bg-gray-100'
+                            }
+                          `}
+                          onClick={() => handleNavigation(item.path)}
+                          title={item.description}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <span className="text-lg">{item.icon}</span>
+                            <div>
+                              <div className="font-medium">{item.label}</div>
+                              <div className="text-xs text-gray-500">
+                                {item.description}
+                              </div>
+                            </div>
+                          </div>
+                        </Button>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            )}
 
-              {/* 관리자 전용 메뉴 */}
-              {isAdmin &&
-                adminMenuItems.map(item => (
-                  <li key={item.path}>
-                    <button
-                      onClick={() => handleNavigation(item.path)}
-                      className={`
-                                            w-full text-left px-4 py-3 rounded-lg transition-colors duration-200
-                                            ${
-                                              location.pathname === item.path
-                                                ? 'bg-purple-50 text-purple-700 border border-purple-200'
-                                                : 'text-gray-700 hover:bg-purple-50'
-                                            }
-                                        `}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <span className="text-lg">{item.icon}</span>
-                        <span className="font-medium">{item.label}</span>
-                        <span className="ml-auto text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded-full">
-                          관리자
-                        </span>
-                      </div>
-                    </button>
-                  </li>
-                ))}
-            </ul>
+            {/* 관리자 메뉴 */}
+            {isAdmin && adminMenuItems.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 mb-3 border-t pt-3">
+                  ⚙️ 관리자
+                </p>
+                <ul className="space-y-2">
+                  {adminMenuItems.map(item => (
+                    <li key={item.path}>
+                      <Button
+                        variant="ghost"
+                        className={`
+                          w-full text-left px-4 py-3 rounded-lg transition-colors duration-200
+                          ${
+                            location.pathname === item.path
+                              ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                              : 'text-gray-700 hover:bg-purple-50'
+                          }
+                        `}
+                        onClick={() => handleNavigation(item.path)}
+                        title={item.description}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <span className="text-lg">{item.icon}</span>
+                          <div>
+                            <div className="font-medium">{item.label}</div>
+                            <div className="text-xs text-gray-500">
+                              {item.description}
+                            </div>
+                          </div>
+                        </div>
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </nav>
           {/* 하단 버튼들 */}
           <div className="p-4 space-y-3">
@@ -169,19 +226,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               disabled={loading}
               className="w-full justify-start text-gray-700 hover:bg-gray-100"
             >
-              <span className="mr-2">🚪</span>
               로그아웃
             </Button>
 
             {/* 회원탈퇴 버튼 */}
             <Button
-              variant="danger"
+              variant="destructive"
               size="sm"
               onClick={handleDeleteAccount}
               disabled={loading || isDeleting}
-              className="w-full justify-start bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
+              className="w-full justify-start"
             >
-              <span className="mr-2">⚠️</span>
               {isDeleting ? '삭제 중...' : '회원탈퇴'}
             </Button>
           </div>

@@ -55,13 +55,11 @@ const TestControl: React.FC<TestControlProps> = ({
     }
   };
 
-  // 다중 선택 모드 토글
-  const toggleMultiSelectMode = () => {
-    setIsMultiSelectMode(!isMultiSelectMode);
-    if (!isMultiSelectMode && selectedTopicIds.length > 1) {
-      // 다중 선택 모드로 전환 시 현재 선택 유지
-    } else if (isMultiSelectMode && selectedTopicIds.length > 1) {
-      // 단일 선택 모드로 전환 시 첫 번째 선택만 유지
+  // 명시적으로 모드를 설정할 때 사용할 헬퍼
+  const setMultiMode = (mode: boolean) => {
+    if (mode === isMultiSelectMode) return;
+    setIsMultiSelectMode(mode);
+    if (!mode && selectedTopicIds.length > 1) {
       setSelectedTopicIds([selectedTopicIds[0]]);
     }
   };
@@ -81,39 +79,37 @@ const TestControl: React.FC<TestControlProps> = ({
   );
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
-      <div className="text-center">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
-          RF Check
-        </h1>
-        <p className="text-gray-600">
+    <div className="page-container">
+      <div className="page-header">
+        <h1 className="page-title">🎯 RF Check</h1>
+        <p className="page-subtitle">
           선택한 주제의 질문들로 말하기 연습을 시작하세요
         </p>
       </div>
 
-      <Card variant="primary" padding="lg">
+      <Card className="p-6">
         <div className="space-y-6">
           {/* 카테고리 필터 */}
           <div>
-            <label className="block text-lg font-medium text-gray-800 mb-4 flex items-center gap-2">
+            <label className="text-lg font-medium text-gray-800 mb-4 flex items-center gap-2">
               <span className="text-xl">📂</span>
               카테고리 선택
             </label>
             <div className="flex flex-wrap gap-2">
               {categories.map(category => (
-                <button
+                <Button
                   key={category}
+                  variant={selectedCategory === category ? 'default' : 'ghost'}
+                  size="sm"
                   onClick={() => setSelectedCategory?.(category)}
-                  className={`
-                    px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
-                    ${
-                      selectedCategory === category
-                        ? 'bg-blue-600 text-white shadow-md'
-                        : 'bg-gray-100 text-gray-800 hover:bg-blue-50'
-                    }`}
+                  className={
+                    selectedCategory === category
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-800 hover:bg-blue-50'
+                  }
                 >
                   {category}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -122,28 +118,26 @@ const TestControl: React.FC<TestControlProps> = ({
           <div className="space-y-4">
             <div className="flex items-center justify-center">
               <div className="bg-gray-100 p-1 rounded-lg inline-flex">
-                <button
-                  onClick={() => toggleMultiSelectMode()}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
-                    !isMultiSelectMode
-                      ? 'bg-white text-blue-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-800'
-                  }`}
+                <Button
+                  variant={isMultiSelectMode ? 'ghost' : 'default'}
+                  size="sm"
+                  onClick={() => setMultiMode(false)}
+                  className={
+                    !isMultiSelectMode ? 'bg-white text-blue-600 shadow-sm' : ''
+                  }
                 >
-                  <span className="text-lg">🎯</span>
-                  단일 선택
-                </button>
-                <button
-                  onClick={() => toggleMultiSelectMode()}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
-                    isMultiSelectMode
-                      ? 'bg-white text-blue-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-800'
-                  }`}
+                  🎯 단일 선택
+                </Button>
+                <Button
+                  variant={isMultiSelectMode ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setMultiMode(true)}
+                  className={
+                    isMultiSelectMode ? 'bg-white text-blue-600 shadow-sm' : ''
+                  }
                 >
-                  <span className="text-lg">🎪</span>
-                  다중 선택
-                </button>
+                  🎪 다중 선택
+                </Button>
               </div>
             </div>
 
@@ -155,20 +149,16 @@ const TestControl: React.FC<TestControlProps> = ({
                   테스트 중 시간을 표시합니다
                 </p>
               </div>
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setIsStopwatchMode(!isStopwatchMode)}
-                className={`
-                  relative inline-flex h-6 w-11 items-center rounded-full transition-colors
-                  ${isStopwatchMode ? 'bg-blue-600' : 'bg-gray-300'}
-                `}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isStopwatchMode ? 'bg-blue-600' : 'bg-gray-300'}`}
               >
                 <span
-                  className={`
-                    inline-block h-4 w-4 transform rounded-full bg-white transition-transform
-                    ${isStopwatchMode ? 'translate-x-6' : 'translate-x-1'}
-                  `}
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isStopwatchMode ? 'translate-x-6' : 'translate-x-1'}`}
                 />
-              </button>
+              </Button>
             </div>
 
             {/* 모드별 설명 */}
@@ -207,7 +197,6 @@ const TestControl: React.FC<TestControlProps> = ({
                         variant="ghost"
                         size="sm"
                         onClick={selectAllTopics}
-                        icon="☑️"
                       >
                         전체 선택
                       </Button>
@@ -217,7 +206,6 @@ const TestControl: React.FC<TestControlProps> = ({
                     variant="ghost"
                     size="sm"
                     onClick={clearAllSelections}
-                    icon="🗑️"
                   >
                     선택 해제
                   </Button>
@@ -281,7 +269,6 @@ const TestControl: React.FC<TestControlProps> = ({
 
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-xl">📚</span>
                             <div className="font-medium text-base">
                               {topic.name}
                             </div>
@@ -298,7 +285,7 @@ const TestControl: React.FC<TestControlProps> = ({
           {/* 다중 선택 모드 - 체크박스 스타일 개선 */}
           {isMultiSelectMode && (
             <div>
-              <label className="block text-lg font-medium text-gray-800 mb-4 flex items-center gap-2">
+              <label className="text-lg font-medium text-gray-800 mb-4 flex items-center gap-2">
                 <span className="text-xl">🎪</span>
                 원하는 주제들을 모두 선택하세요
               </label>
@@ -349,7 +336,6 @@ const TestControl: React.FC<TestControlProps> = ({
 
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xl">📚</span>
                             <div className="font-medium text-base">
                               {topic.name}
                             </div>
@@ -380,26 +366,17 @@ const TestControl: React.FC<TestControlProps> = ({
                         : 'bg-blue-100 text-blue-800 border border-blue-300'
                     }`}
                   >
-                    <span className="text-base">📚</span>
                     <span>{topic.name}</span>
                     {isMultiSelectMode && (
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => handleTopicSelect(topic.id)}
-                        className="ml-1 hover:bg-purple-200 rounded-full p-1 transition-colors"
+                        className="ml-1"
                         title="제거"
                       >
-                        <svg
-                          className="w-3 h-3"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </button>
+                        ✕
+                      </Button>
                     )}
                   </span>
                 ))}
@@ -413,9 +390,8 @@ const TestControl: React.FC<TestControlProps> = ({
               onClick={onStart}
               disabled={selectedTopicIds.length === 0}
               loading={isLoading}
-              icon="🚀"
               className="w-full text-lg py-4 font-semibold"
-              variant="success"
+              variant="default"
             >
               {selectedTopicIds.length === 0 ? (
                 <span className="flex items-center gap-2">
@@ -424,7 +400,7 @@ const TestControl: React.FC<TestControlProps> = ({
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
-                  테스트 시작하기
+                  🚀 테스트 시작하기
                   <span className="bg-white/20 px-2 py-1 rounded-full text-sm">
                     {selectedTopics.length}개 주제
                   </span>

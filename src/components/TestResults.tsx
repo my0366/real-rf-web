@@ -40,7 +40,7 @@ const TestResults: React.FC<TestResultsProps> = ({
   };
 
   return (
-    <Card className="w-full max-w-2xl" padding="lg">
+    <Card className="w-full max-w-2xl p-6">
       <div className="text-center space-y-6">
         {/* 결과 헤더 */}
         <div className="space-y-2">
@@ -96,17 +96,17 @@ const TestResults: React.FC<TestResultsProps> = ({
                 variant="secondary"
                 onClick={onShowUnknownQuestions}
                 icon="📋"
-                size="md"
+                size="default"
                 className="bg-red-100 hover:bg-red-200 text-red-800 border-red-300 flex-1"
               >
                 문제 목록 보기
               </Button>
               {onReviewUnknown && (
                 <Button
-                  variant="primary"
+                  variant="default"
                   onClick={onReviewUnknown}
                   icon="🔄"
-                  size="md"
+                  size="default"
                   className="bg-red-600 hover:bg-red-700 text-white flex-1"
                 >
                   복습 모드로 다시 풀기
@@ -119,7 +119,7 @@ const TestResults: React.FC<TestResultsProps> = ({
         {/* 액션 버튼 */}
         <div className="flex flex-col sm:flex-row gap-3">
           <Button
-            variant="primary"
+            variant="default"
             onClick={onRestart}
             icon="🔄"
             size="lg"

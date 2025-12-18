@@ -89,7 +89,7 @@ const TestProgress: React.FC<TestProgressProps> = ({
         <div className="flex-shrink-0 p-6">
           <div className="text-center">
             <Button
-              variant="danger"
+              variant="destructive"
               size="lg"
               onClick={onStop}
               className="px-12 py-4 text-lg font-semibold w-full"

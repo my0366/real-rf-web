@@ -43,10 +43,7 @@ const UnknownQuestionsList: React.FC<UnknownQuestionsListProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <Card
-        className="w-full max-w-4xl max-h-[80vh] overflow-auto"
-        padding="lg"
-      >
+      <Card className="w-full max-w-4xl max-h-[80vh] overflow-auto p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-800">
@@ -60,7 +57,7 @@ const UnknownQuestionsList: React.FC<UnknownQuestionsListProps> = ({
             variant="secondary"
             onClick={onClose}
             icon="✕"
-            size="md"
+            size="default"
             className="shrink-0"
           >
             닫기
@@ -88,8 +85,7 @@ const UnknownQuestionsList: React.FC<UnknownQuestionsListProps> = ({
                   return (
                     <Card
                       key={`${question.id}-${index}`}
-                      className="border-l-4 border-l-red-500 hover:shadow-md transition-shadow"
-                      padding="md"
+                      className="border-l-4 border-l-red-500 hover:shadow-md transition-shadow p-4"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
@@ -98,16 +94,16 @@ const UnknownQuestionsList: React.FC<UnknownQuestionsListProps> = ({
                               #{index + 1}
                             </span>
                             <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
-                              📚 {question.topic.name}
+                              {question.topic.name}
                             </span>
                             <span
                               className={`text-xs font-medium px-2 py-1 rounded-full ${difficultyInfo.color}`}
                             >
-                              {difficultyInfo.emoji} {difficultyInfo.label}
+                              {difficultyInfo.label}
                             </span>
                             {stats && stats.wrongCount > 0 && (
                               <span className="bg-orange-100 text-orange-800 text-xs font-medium px-2 py-1 rounded-full">
-                                ❌ {stats.wrongCount}회 틀림
+                                {stats.wrongCount}회 틀림
                               </span>
                             )}
                           </div>

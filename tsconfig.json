@@ -3,5 +3,16 @@
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
-  ]
+  ],
+  "compilerOptions": {
+    // ... 기존 설정들 ...
+    // React 17 이상 (Vite, Next.js 등 최신 환경)
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+    // 혹은 구버전 React 환경이라면
+    // "jsx": "react"
+  }
 }

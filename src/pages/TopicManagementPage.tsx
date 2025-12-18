@@ -3,11 +3,10 @@ import TopicManager from '../components/TopicManager';
 
 const TopicManagementPage: React.FC = () => {
   return (
-    <div className="p-4 md:p-8">
+    <div className="page-container">
       <TopicManager />
     </div>
   );
 };
 
 export default TopicManagementPage;
-

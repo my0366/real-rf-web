@@ -85,7 +85,6 @@ const UnknownWordsPage: React.FC = () => {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
-          <div className="text-2xl mb-2">⏳</div>
           <p className="text-gray-600">로딩 중...</p>
         </div>
       </div>
@@ -93,20 +92,18 @@ const UnknownWordsPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4 md:space-y-6 p-8">
+    <div className="page-container">
       {/* 헤더 */}
-      <div className="flex flex-col gap-3">
-        <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-          📚 모르는 단어
-        </h2>
-        <p className="text-sm text-gray-600">
+      <div className="page-header">
+        <h1 className="page-title">모르는 단어</h1>
+        <p className="page-subtitle">
           학습이 필요한 단어들을 관리하고 복습하세요
         </p>
       </div>
 
       {/* 통계 카드 */}
       {stats && (
-        <Card variant="primary" padding="md">
+        <Card className="p-4">
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <div className="text-2xl font-bold text-[#228BE6]">
@@ -131,7 +128,7 @@ const UnknownWordsPage: React.FC = () => {
       )}
 
       {/* 필터 및 보기 모드 */}
-      <Card variant="primary" padding="md">
+      <Card className="p-4">
         <div className="space-y-4">
           {/* 필터 선택 */}
           <div>
@@ -156,48 +153,42 @@ const UnknownWordsPage: React.FC = () => {
               보기 모드
             </label>
             <div className="flex flex-wrap gap-2">
-              <button
+              <Button
+                variant={viewMode === 'all' ? 'default' : 'ghost'}
+                size="sm"
                 onClick={() => handleViewModeChange('all')}
-                className={`
-                  px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2
-                  ${
-                    viewMode === 'all'
-                      ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-300'
-                      : 'bg-gray-100 text-gray-800 hover:bg-blue-50 hover:text-blue-600'
-                  }
-                `}
+                className={
+                  viewMode === 'all'
+                    ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-300'
+                    : ''
+                }
               >
-                <span className="text-lg">📖</span>
-                전체 보기
-              </button>
-              <button
+                📖 전체 보기
+              </Button>
+              <Button
+                variant={viewMode === 'meaningOnly' ? 'default' : 'ghost'}
+                size="sm"
                 onClick={() => handleViewModeChange('meaningOnly')}
-                className={`
-                  px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2
-                  ${
-                    viewMode === 'meaningOnly'
-                      ? 'bg-purple-600 text-white shadow-md ring-2 ring-purple-300'
-                      : 'bg-gray-100 text-gray-800 hover:bg-purple-50 hover:text-purple-600'
-                  }
-                `}
+                className={
+                  viewMode === 'meaningOnly'
+                    ? 'bg-purple-600 text-white shadow-md ring-2 ring-purple-300'
+                    : ''
+                }
               >
-                <span className="text-lg">💭</span>
-                뜻만 보기
-              </button>
-              <button
+                💭 뜻만 보기
+              </Button>
+              <Button
+                variant={viewMode === 'wordOnly' ? 'default' : 'ghost'}
+                size="sm"
                 onClick={() => handleViewModeChange('wordOnly')}
-                className={`
-                  px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2
-                  ${
-                    viewMode === 'wordOnly'
-                      ? 'bg-green-600 text-white shadow-md ring-2 ring-green-300'
-                      : 'bg-gray-100 text-gray-800 hover:bg-green-50 hover:text-green-600'
-                  }
-                `}
+                className={
+                  viewMode === 'wordOnly'
+                    ? 'bg-green-600 text-white shadow-md ring-2 ring-green-300'
+                    : ''
+                }
               >
-                <span className="text-lg">📝</span>
-                단어만 보기
-              </button>
+                📝 단어만 보기
+              </Button>
             </div>
           </div>
 
@@ -237,21 +228,11 @@ const UnknownWordsPage: React.FC = () => {
                   )}
                 </p>
                 <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={revealAllCards}
-                    icon="👁️"
-                  >
-                    전체 보기
+                  <Button variant="ghost" size="sm" onClick={revealAllCards}>
+                    👁️ 전체 보기
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={hideAllCards}
-                    icon="🙈"
-                  >
-                    전체 숨기기
+                  <Button variant="ghost" size="sm" onClick={hideAllCards}>
+                    🙈 전체 숨기기
                   </Button>
                 </div>
               </div>
@@ -263,16 +244,16 @@ const UnknownWordsPage: React.FC = () => {
       {/* 단어 목록 */}
       {filteredWords.length === 0 ? (
         <Card>
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">📖</div>
-            <p className="text-gray-500 text-base mb-2">
+          <div className="state-empty">
+            <div className="state-empty-icon">📖</div>
+            <p className="state-empty-title">
               {filter === 'unlearned'
                 ? '학습 중인 단어가 없습니다.'
                 : filter === 'learned'
                   ? '학습 완료한 단어가 없습니다.'
                   : '저장된 단어가 없습니다.'}
             </p>
-            <p className="text-gray-400 text-sm">
+            <p className="state-empty-subtitle">
               질문 카드에서 "모르는 단어" 버튼을 눌러 추가하세요!
             </p>
           </div>
@@ -286,8 +267,7 @@ const UnknownWordsPage: React.FC = () => {
             return (
               <Card
                 key={word.id}
-                padding="lg"
-                className={`hover:shadow-lg transition-all duration-200 border-l-4 ${
+                className={`p-6 hover:shadow-lg transition-all duration-200 border-l-4 ${
                   word.is_learned ? 'border-l-green-500' : 'border-l-orange-500'
                 } ${isInteractive ? 'cursor-pointer' : ''}`}
                 onClick={() => isInteractive && toggleCardReveal(word.id)}
@@ -392,23 +372,21 @@ const UnknownWordsPage: React.FC = () => {
                   >
                     {!word.is_learned && (
                       <Button
-                        variant="primary"
+                        variant="default"
                         size="sm"
                         onClick={() =>
                           handleMarkAsLearned(word.question_id, word.is_learned)
                         }
                         className="flex-1"
-                        icon="✓"
                       >
                         학습 완료
                       </Button>
                     )}
                     <Button
-                      variant="danger"
+                      variant="destructive"
                       size="sm"
                       onClick={() => handleRemove(word.question_id)}
                       className={!word.is_learned ? '' : 'flex-1'}
-                      icon="✕"
                     >
                       제거
                     </Button>
@@ -421,7 +399,7 @@ const UnknownWordsPage: React.FC = () => {
       )}
 
       {/* 학습 팁 */}
-      <Card variant="warning" padding="md">
+      <Card variant="warning" className="p-4">
         <h4 className="text-sm font-semibold text-yellow-800 mb-2 flex items-center gap-2">
           💡 학습 팁
         </h4>

@@ -67,19 +67,16 @@ export default function PWAInstallGuide({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-md max-h-[80vh] overflow-auto" padding="lg">
+      <Card className="w-full max-w-md max-h-[80vh] overflow-auto p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-bold text-gray-800">
-              📱 앱으로 설치하기
-            </h2>
+            <h2 className="text-xl font-bold text-gray-800">앱으로 설치하기</h2>
             <p className="text-gray-600">RF Check를 앱처럼 사용해보세요!</p>
           </div>
           <Button
             variant="secondary"
             onClick={onClose}
-            icon="✕"
-            size="md"
+            size="sm"
             className="shrink-0"
           >
             닫기
@@ -90,7 +87,6 @@ export default function PWAInstallGuide({
           <div className="flex-1 overflow-y-auto">
             {isStandalone ? (
               <div className="text-center py-12">
-                <div className="text-green-600 text-6xl mb-4">✅</div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">
                   이미 앱으로 설치되어 있습니다!
                 </h3>
@@ -102,17 +98,13 @@ export default function PWAInstallGuide({
               <div className="space-y-4">
                 {/* Android/Chrome */}
                 {deferredPrompt && (
-                  <Card className="border-l-4 border-l-green-500" padding="md">
+                  <Card className="border-l-4 border-l-green-500 p-4">
                     <div className="flex items-center gap-3">
-                      <div className="text-2xl">🤖</div>
                       <div className="flex-1">
                         <h3 className="font-semibold text-gray-800 mb-2">
                           Android / Chrome
                         </h3>
-                        <Button
-                          onClick={handleInstallClick}
-                          className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                        >
+                        <Button onClick={handleInstallClick} className="w-full">
                           지금 설치하기
                         </Button>
                       </div>
@@ -122,9 +114,8 @@ export default function PWAInstallGuide({
 
                 {/* iOS Safari */}
                 {isIOSDevice && (
-                  <Card className="border-l-4 border-l-blue-500" padding="md">
+                  <Card className="border-l-4 border-l-blue-500 p-4">
                     <div className="flex items-start gap-3">
-                      <div className="text-2xl">🍎</div>
                       <div className="flex-1">
                         <h3 className="font-semibold text-gray-800 mb-2">
                           iPhone / iPad
@@ -159,9 +150,8 @@ export default function PWAInstallGuide({
 
                 {/* Desktop */}
                 {!isIOSDevice && !deferredPrompt && (
-                  <Card className="border-l-4 border-l-purple-500" padding="md">
+                  <Card className="border-l-4 border-l-purple-500 p-4">
                     <div className="flex items-start gap-3">
-                      <div className="text-2xl">🖥️</div>
                       <div className="flex-1">
                         <h3 className="font-semibold text-gray-800 mb-2">
                           데스크톱
@@ -187,12 +177,8 @@ export default function PWAInstallGuide({
                   </Card>
                 )}
 
-                <Card
-                  className="bg-blue-50 border-l-4 border-l-blue-400"
-                  padding="md"
-                >
+                <Card className="bg-blue-50 border-l-4 border-l-blue-400 p-4">
                   <div className="flex items-start gap-3">
-                    <div className="text-2xl">💡</div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-blue-900 mb-2">
                         앱 설치의 장점

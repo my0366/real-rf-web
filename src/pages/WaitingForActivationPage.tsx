@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import Card from '../components/ui/Card';
-import Button from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
 
 const WaitingForActivationPage: React.FC = () => {
   const { user, signOut } = useAuth();
@@ -18,8 +18,9 @@ const WaitingForActivationPage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#228BE6]/5 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-8 text-center">
         <div className="mb-6">
-          <div className="text-6xl mb-4">⏳</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">계정 활성화 대기 중</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            계정 활성화 대기 중
+          </h2>
           <p className="text-gray-600">
             회원가입이 완료되었지만 아직 관리자의 승인을 받지 못했습니다.
           </p>
@@ -32,10 +33,15 @@ const WaitingForActivationPage: React.FC = () => {
                 {user?.email.charAt(0).toUpperCase()}
               </span>
             </div>
-            <span className="ml-3 text-sm font-medium text-gray-900">{user?.email}</span>
+            <span className="ml-3 text-sm font-medium text-gray-900">
+              {user?.email}
+            </span>
           </div>
           <p className="text-xs text-gray-600">
-            가입일: {user?.created_at ? new Date(user.created_at).toLocaleDateString('ko-KR') : ''}
+            가입일:{' '}
+            {user?.created_at
+              ? new Date(user.created_at).toLocaleDateString('ko-KR')
+              : ''}
           </p>
         </div>
 
@@ -45,7 +51,7 @@ const WaitingForActivationPage: React.FC = () => {
             <span>이메일 인증이 완료되었습니다</span>
           </div>
           <div className="flex items-start space-x-3">
-            <span className="text-yellow-500">⏳</span>
+            <span className="text-yellow-500">대기</span>
             <span>관리자 승인을 기다리고 있습니다</span>
           </div>
           <div className="flex items-start space-x-3">
@@ -59,11 +65,7 @@ const WaitingForActivationPage: React.FC = () => {
             승인이 지연되고 있다면 관리자에게 문의해주세요.
           </p>
 
-          <Button
-            onClick={handleLogout}
-            variant="ghost"
-            className="w-full"
-          >
+          <Button onClick={handleLogout} variant="ghost" className="w-full">
             로그아웃
           </Button>
         </div>

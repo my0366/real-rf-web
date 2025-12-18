@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { QuestionWithTopic } from '../types/question';
 import { useTopics, useTestQuestions } from '../hooks/useQuestions';
 import {
@@ -108,7 +108,7 @@ const TestPage: React.FC = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [isTestMode, isRunning, currentQuestion]); // 의존성 배열에 필요한 상태 추가
+  }, [isTestMode, isRunning, currentQuestion, nextQuestion]); // 의존성 배열에 nextQuestion 추가
 
   const getRandomQuestion = (questionsPool?: QuestionWithTopic[]) => {
     // questionsPool이 제공되면 사용하고, 아니면 현재 availableQuestions 사용
@@ -217,7 +217,7 @@ const TestPage: React.FC = () => {
     setShowResults(true);
   };
 
-  const nextQuestion = () => {
+  const nextQuestion = useCallback(() => {
     // 현재 문제를 맞은 것으로 처리
     if (currentQuestion) {
       markQuestionAsCorrect(currentQuestion.id);
@@ -225,7 +225,7 @@ const TestPage: React.FC = () => {
 
     setQuestionCount(prev => prev + 1);
     getRandomQuestion();
-  };
+  }, [currentQuestion]);
 
   // 모르는 문제로 표시하고 다음 질문으로 넘어가는 함수
   const markAsUnknownAndNext = () => {
@@ -284,7 +284,6 @@ const TestPage: React.FC = () => {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-2xl mb-2">⏳</div>
           <p className="text-gray-600">주제를 불러오는 중...</p>
         </div>
       </div>
